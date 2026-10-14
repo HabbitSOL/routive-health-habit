@@ -1,0 +1,75 @@
+spring:
+  application:
+    name: health-habit-api
+  datasource:
+    url: ${DB_URL:jdbc:mariadb://localhost:3306/health_habit}
+    username: ${DB_USERNAME:health_habit}
+    password: ${DB_PASSWORD:health_habit_local}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    default-property-inclusion: non_null
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      "mail.smtp.auth": ${MAIL_SMTP_AUTH:true}
+      "mail.smtp.starttls.enable": ${MAIL_STARTTLS:true}
+      "mail.smtp.connectiontimeout": 5000
+      "mail.smtp.timeout": 3000
+      "mail.smtp.writetimeout": 5000
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    org.hibernate.orm.connections: WARN
+  pattern:
+    level: "%5p [traceId:%X{traceId:-}]"
+
+auth:
+  jwt:
+    issuer: ${JWT_ISSUER:health-habit-api}
+    secret: ${JWT_SECRET:local-development-secret-key-change-me-0123456789abcdef}
+    access-token-seconds: ${JWT_ACCESS_TOKEN_SECONDS:3600}
+    refresh-token-seconds: ${JWT_REFRESH_TOKEN_SECONDS:2592000}
+  email-token-seconds: ${EMAIL_VERIFICATION_TOKEN_SECONDS:1800}
+  password-reset-token-seconds: ${PASSWORD_RESET_TOKEN_SECONDS:1800}
+  mail-cooldown-seconds: ${MAIL_COOLDOWN_SECONDS:60}
+
+social:
+  kakao:
+    app-id: ${KAKAO_APP_ID:}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+
+app:
+  mail:
+    mode: ${MAIL_MODE:console}
+    from: ${MAIL_FROM:no-reply@health-habit.local}
+    verification-base-url: ${EMAIL_VERIFICATION_BASE_URL:http://localhost:8080/verify-email}
+    password-reset-base-url: ${PASSWORD_RESET_BASE_URL:http://localhost:8080/reset-password}
+

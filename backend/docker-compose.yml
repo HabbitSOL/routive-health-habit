@@ -1,0 +1,23 @@
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: health-habit-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: health_habit
+      MARIADB_USER: health_habit
+      MARIADB_PASSWORD: health_habit_local
+      MARIADB_ROOT_PASSWORD: root_local_only
+      TZ: Asia/Seoul
+    ports:
+      - "3306:3306"
+    volumes:
+      - health-habit-mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  health-habit-mariadb-data:
