@@ -1,5 +1,15 @@
 # 변경 이력
 
+## 2026-10-15 — GitHub 비공개 저장소 및 공동 개발 환경 구성
+
+- 1214alex/routive-health-habit 생성, origin 연결, main/develop 초기화.
+- codex/chore/initial-import 브랜치에서 develop 대상 초기 PR #1 생성.
+- type(scope): 변경 내용 형식으로 설정·설계·구현·CI 커밋 분리.
+- 루트 제외 규칙, 저장소 README, PR 템플릿, H2·MariaDB GitHub Actions 추가.
+- 첫 원격 Push·PR 실행에서 각각 H2 59개·MariaDB 59개 및 Flyway V1~V6 검증 성공.
+- 공식 checkout v7.0.1·setup-java v6.0.1 SHA 및 Ubuntu 24.04 사용.
+- 비공개 요금제 제한으로 강제 브랜치 보호 미적용. PR 검토 대기 상태 유지.
+
 ## 2026-10-15 — 프로필·기본 온보딩·동의 변경 마무리
 
 - GET /users/me에 profile 추가, PATCH /users/me로 닉네임·생년월일·성별·키 부분 수정.

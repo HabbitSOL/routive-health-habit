@@ -57,6 +57,11 @@ GitHub 요금제에서 비공개 저장소 보호 규칙을 지원하면 main/de
 main은 승인 1명과 대화 해결도 필수로 설정한다.
 보호 규칙 적용 결과는 backend/DEVELOPMENT_LOG.md의 GitHub 초기 구성 이력을 확인한다.
 
+2026-10-15 적용 시도 결과: main·develop 모두 GitHub Pro 업그레이드 또는 공개 저장소 전환이 필요하다는 HTTP 403 응답으로 강제 보호를 적용하지 못했다.
+비공개 상태를 유지했다. 현재 PR·CI 절차는 팀 운영 규칙으로 준수해야 하며 GitHub가 직접 Push를 차단하는 상태는 아니다.
+
+최초 검토 PR: https://github.com/1214alex/routive-health-habit/pull/1
+
 ## 로컬 환경
 
 - backend/.env.example은 예시만 제공한다. 실제 .env는 Git에 올리지 않는다.

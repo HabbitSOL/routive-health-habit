@@ -21,6 +21,7 @@
 | 메일·링크 화면 | SMTP/콘솔 발송, /verify-email 및 /reset-password 화면 | 로컬 SMTP 소켓으로 실제 메일 전송·본문 확인, 공개 라우팅 검증. 브라우저/앱 E2E는 별도 |
 | 프로필·기본 온보딩 | 닉네임·생년월일·성별·키 부분 수정, 선택값 삭제, 최초 완료 시각, 탈퇴 시 프로필 삭제 | 입력 검증·반복 완료·사용자 격리 검증. 생활패턴 설문·신체측정은 후속 |
 | 동의 변경 | 동의 이력 조회, 철회·재동의, 버전 변경 이력 보존, 동시 요청 직렬화 | 필수 동의 철회 시 프로필 저장·온보딩 차단. 약관 게시 버전 검증 및 기존 데이터 보존·삭제 정책은 후속 |
+| GitHub·CI | 1214alex/routive-health-habit 비공개 저장소, main/develop·작업 브랜치, 초기 PR #1, H2·MariaDB CI | 첫 원격 실행 각각 59개 통과. PR은 검토 대기, 요금제 제한으로 강제 브랜치 보호는 미적용 |
 | 후속 제품 기능 | 개인 복약·식사·습관·알림·통계는 아직 미구현 | 다음 제품 개발은 사전 검증·공공데이터 적재·개인 복약 등록 |
 ## 2. 구현된 API
 공통 접두어는 `/api/v1`입니다.
@@ -86,6 +87,15 @@ H2 실행 완료: 2026-10-14 20:33:37 KST. MariaDB 실행 완료: 2026-10-15 01:
 Google은 로컬 키로 서명한 토큰, Kakao는 모의 HTTP 응답을 사용했습니다. 실제 공급자 계정·클라이언트 설정·모바일 SDK 연동을 검증한 것은 아닙니다. SMTP는 localhost 수신 서버까지 검증했으며 외부 수신함 도착은 미검증입니다. 링크 화면은 라우팅·정적 자원·GET 비소비 동작을 확인했고 실제 브라우저 사용자 조작은 별도 확인 대상입니다.
 MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했으며 검사 후 서버를 종료했습니다. 재실행용 JDK·MariaDB 도구는 Git에서 제외한 .tools에 보관합니다.
 빌드 중 Maven 저장소 메타데이터 401, Mockito 동적 에이전트, Windows MariaDB의 WSREP_ON 조회 경고가 있었으나 최종 검증은 성공했습니다.
+
+### GitHub Actions 검증 — 2026-10-15
+
+- 초기 원격 커밋 f0dc08f의 [Push 실행](https://github.com/1214alex/routive-health-habit/actions/runs/38597099261)과 [PR 실행](https://github.com/1214alex/routive-health-habit/actions/runs/38597237708)이 성공했습니다.
+- 원격 Linux·Java 21에서 H2 59개, MariaDB 11.4에서 59개 통과. 실패·오류·건너뜀 0, 양쪽 BUILD SUCCESS.
+- MariaDB 컨테이너의 빈 DB에 Flyway V1~V6 적용과 JPA validate를 확인했습니다.
+- 초기 실행에서 발견한 Node 20·setup-java v4 지원 종료 경고에 따라 공식 checkout v7.0.1, setup-java v6.0.1을 SHA에 고정하고 Ubuntu 24.04로 변경했습니다. 갱신 후 결과는 PR의 최신 Checks에서도 확인할 수 있습니다.
+- 갱신 커밋 a5d9d30의 [PR CI 실행](https://github.com/1214alex/routive-health-habit/actions/runs/38597607175)도 성공했습니다. 지원 버전 갱신 후 H2·MariaDB 각각 59개 통과와 V1~V6 적용을 재확인했습니다.
+- 애플리케이션 코드를 변경하지 않아 이번 저장소 구성 중 로컬 테스트를 재실행하지 않았습니다. 위 원격 실행과 이전 로컬 결과를 구분합니다.
 ## 5. 현재 동작 정책
 - 이메일 가입은 PENDING_EMAIL_VERIFICATION → ACTIVE. 인증되지 않은 계정 로그인은 거절합니다.
 - JWT의 sid와 DB 세션을 매 요청 확인합니다. 로그아웃·비밀번호 재설정·탈퇴 직후 기존 액세스 토큰을 차단합니다.
@@ -115,6 +125,8 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 - [ ] 이후 확정 MVP의 식사·습관·알림·통계.
 ### 선택 확장
 - [ ] 로그인 시도 제한, 계정 연결, 외부 공급자 연결 해제 정책.
+- [ ] 현서의 GitHub 계정 확인 후 협업 권한 부여 및 초기 PR 검토·병합.
+- [ ] 비공개 저장소 보호를 지원하는 GitHub 요금제 사용 시 main/develop 강제 보호 적용.
 ## 7. 근거와 실행 안내
 - `backend/AUTH_SETUP.md`: 설정값·이메일/소셜 시연·클라이언트 토큰 처리.
 - `backend/PROFILE_ONBOARDING_API.md`: 프로필·기본 온보딩·동의 API 계약 및 앱 연결 순서.
@@ -126,6 +138,7 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 - `backend/src/test/resources/application-mariadb-test.yml`: 실제 DB 검증 설정.
 - `backend/target/surefire-reports`: 마지막 실행 보고서. 빌드 정리 시 삭제될 수 있어 이 문서에 결과를 보존합니다.
 - `backend/DEVELOPMENT_LOG.md`: 노션 기록의 로컬 사본.
+- [GitHub 저장소](https://github.com/1214alex/routive-health-habit), [초기 PR #1](https://github.com/1214alex/routive-health-habit/pull/1), `development_roles/GitHub_저장소_시작하기.md`: 업로드·브랜치·초대 절차.
 ## 8. 앞으로의 기록 방식
 개발 작업을 마칠 때 이 문서를 갱신합니다. 현재 상태는 최신 내용으로 유지하고, 아래 날짜별 작업 이력은 보존합니다.
 기록 항목은 변경 목적, 구현 기능·API·DB, 실제 실행한 테스트 명령·환경·성공/실패 수, 미검증 항목, 다음 작업, 소스 근거입니다.
@@ -152,6 +165,17 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 - MariaDB에서 V1~V6 적용과 JPA validate, 동시 동의 및 사용자 데이터 격리를 확인. 테스트 서버 종료.
 - API 연결 문서·README·설정 안내·CHANGELOG·REST API 명세·인수인계·개발 기록 및 노션 갱신.
 - 다음 작업: 의약품 사전 검증·공공데이터 적재·개인 복약 등록. Android 및 외부 실계정 연동은 미검증.
+
+### 2026-10-15 · GitHub 초기 구성 및 전략에 따른 업로드
+
+- 1214alex/routive-health-habit 비공개 저장소를 생성하고 origin을 연결. 작성자는 저장소 로컬 설정에 1214alex와 GitHub noreply 주소를 사용.
+- 최초 기준 커밋으로 main/develop 생성. 초기 구현은 codex/chore/initial-import에서 develop 대상 PR #1로 업로드. 검토 전 병합하지 않음.
+- type(scope): 변경 내용 형식으로 저장소 설정·설계 문서·백엔드 구현·CI를 분리해 커밋. 지원 종료 Action 갱신도 별도 커밋으로 기록.
+- 루트 .gitignore, README, PR 템플릿, H2·MariaDB CI, 저장소 시작 안내 추가. 인증키·환경변수·로컬 도구·DB·빌드 결과·임시 출력물을 제외하고 업로드 목록 점검.
+- 첫 Push 및 PR 원격 CI에서 각각 H2 59개·MariaDB 59개 통과. 실제 외부 계정·Android E2E는 기존 미검증 상태 유지.
+- main/develop 보호 API는 GitHub Pro 또는 공개 전환이 필요하다는 HTTP 403 응답으로 미적용. 사용자 선택에 따라 비공개 상태를 유지하고 수동 협업 규칙으로 안내.
+- 현서의 GitHub 사용자명은 미확정으로 초대하지 않음. 새 저장소는 GitHub 커넥터에서 404가 발생해 로그인된 GitHub CLI로 PR 생성.
+- 개발 기록과 노션에 저장소·PR·검증 근거 및 제약을 기록.
 
 ## 10. 이전 테스트 기록 (초기 구현, 현재 상태 아님)
 <details>

@@ -12,6 +12,7 @@
 - [현서 — Google AI Studio Android 프론트엔드](현서_프론트엔드.md)
 - [시스템 아키텍처 — Spring MVC + Android MVVM](시스템_아키텍처_MVC_MVVM.md)
 - [GitHub 브랜치 전략](GitHub_브랜치_전략.md)
+- [GitHub 저장소 시작하기](GitHub_저장소_시작하기.md)
 
 ## 역할 요약
 
