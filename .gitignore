@@ -1,0 +1,35 @@
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+!.github/
+
+# Local build tools, databases and generated reports
+**/.tools/
+**/target/
+**/build/
+**/.gradle/
+*.log
+*.class
+*.hprof
+
+# Working files and generated exports (canonical documents live at the root)
+/.work_reqspec/
+/outputs/
+/tmp/
+.codex/
+.agents/
+
+# Editors and OS metadata
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+local.properties
