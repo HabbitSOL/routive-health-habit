@@ -1,0 +1,715 @@
+Project health_habit_service {
+  database_type: 'MariaDB'
+  Note: '정규화 v2. MariaDB 11.4 LTS, InnoDB, utf8mb4_uca1400_ai_ci, UTC datetime(6), UUID BINARY(16).'
+}
+
+Table users {
+  id binary(16) [pk]
+  email varchar [not null]
+  email_normalized varchar [not null]
+  password_hash varchar
+  status varchar [not null]
+  timezone varchar [not null, default: 'Asia/Seoul']
+  locale varchar [not null, default: 'ko-KR']
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+  deleted_at datetime(6)
+
+  Indexes {
+    email_normalized [unique]
+  }
+}
+
+Table user_profiles {
+  user_id binary(16) [pk, ref: > users.id]
+  nickname varchar
+  birth_date date
+  sex varchar
+  height_cm decimal
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+}
+
+Table user_consents {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  consent_type varchar [not null]
+  version varchar [not null]
+  consented_at datetime(6) [not null]
+  withdrawn_at datetime(6)
+
+  Indexes {
+    (user_id, consent_type, version) [unique]
+  }
+}
+
+Table habit_categories {
+  code varchar [pk]
+  name varchar [not null]
+  health_stat_enabled boolean [not null, default: true]
+}
+
+Table unit_definitions {
+  code varchar [pk]
+  name varchar [not null]
+  symbol varchar [not null]
+  dimension_code varchar [not null]
+  canonical_factor decimal [not null]
+  decimal_scale int [not null, default: 2]
+  active boolean [not null, default: true]
+}
+
+Table nutrient_definitions {
+  code varchar [pk]
+  name varchar [not null]
+  canonical_unit_code varchar [not null, ref: > unit_definitions.code]
+  nutrient_group varchar [not null]
+  parent_code varchar [ref: > nutrient_definitions.code]
+  included_in_total boolean [not null, default: true]
+  active boolean [not null, default: true]
+}
+
+Table allergens {
+  code varchar [pk]
+  name varchar [not null]
+  description varchar
+  active boolean [not null, default: true]
+}
+
+Table exercise_categories {
+  code varchar [pk]
+  parent_code varchar [ref: > exercise_categories.code]
+  name varchar [not null]
+  level int [not null]
+  active boolean [not null, default: true]
+}
+
+Table dosage_form_definitions {
+  code varchar [pk]
+  name varchar [not null]
+  active boolean [not null, default: true]
+}
+
+Table medication_ingredients {
+  id binary(16) [pk]
+  external_code varchar
+  name varchar [not null]
+  normalized_name varchar [not null]
+  active boolean [not null, default: true]
+
+  Indexes {
+    external_code [unique]
+    normalized_name [unique]
+  }
+}
+
+Table observation_types {
+  code varchar [pk]
+  name varchar [not null]
+  value_kind varchar [not null]
+  canonical_unit_code varchar [ref: > unit_definitions.code]
+  min_value decimal
+  max_value decimal
+  active boolean [not null, default: true]
+}
+
+Table observation_type_units {
+  observation_type_code varchar [not null, ref: > observation_types.code]
+  unit_code varchar [not null, ref: > unit_definitions.code]
+  is_default boolean [not null, default: false]
+
+  Indexes {
+    (observation_type_code, unit_code) [pk]
+  }
+}
+
+Table healthcare_institutions {
+  id binary(16) [pk]
+  external_code varchar
+  name varchar [not null]
+  status varchar [not null]
+}
+
+Table habits {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  category_code varchar [not null, ref: > habit_categories.code]
+  title varchar [not null]
+  priority smallint
+  status varchar [not null]
+  start_date date [not null]
+  end_date date
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+  deleted_at datetime(6)
+
+  Indexes {
+    (user_id, status)
+  }
+}
+
+Table habit_schedules {
+  id binary(16) [pk]
+  habit_id binary(16) [not null, ref: > habits.id]
+  schedule_type varchar [not null]
+  interval_value int
+  timezone varchar [not null]
+  advanced_rule_json json
+  effective_from date [not null]
+  effective_to date
+  version int [not null]
+  created_at datetime(6) [not null]
+
+  Indexes {
+    (habit_id, version) [unique]
+  }
+}
+
+Table habit_schedule_days {
+  schedule_id binary(16) [not null, ref: > habit_schedules.id]
+  weekday int [not null]
+
+  Indexes {
+    (schedule_id, weekday) [pk]
+  }
+}
+
+Table habit_schedule_times {
+  id binary(16) [pk]
+  schedule_id binary(16) [not null, ref: > habit_schedules.id]
+  sequence_no int [not null]
+  local_time time [not null]
+
+  Indexes {
+    (schedule_id, sequence_no) [unique]
+  }
+}
+
+Table habit_schedule_exceptions {
+  id binary(16) [pk]
+  schedule_id binary(16) [not null, ref: > habit_schedules.id]
+  exception_date date [not null]
+  action varchar [not null]
+  replacement_at datetime(6)
+
+  Indexes {
+    (schedule_id, exception_date) [unique]
+  }
+}
+
+Table habit_occurrences {
+  id binary(16) [pk]
+  habit_id binary(16) [not null, ref: > habits.id]
+  schedule_id binary(16) [not null, ref: > habit_schedules.id]
+  scheduled_at datetime(6) [not null]
+  due_at datetime(6)
+  current_status varchar [not null]
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+
+  Indexes {
+    (schedule_id, scheduled_at) [unique]
+    (habit_id, scheduled_at)
+  }
+}
+
+Table habit_action_events {
+  id binary(16) [pk]
+  occurrence_id binary(16) [not null, ref: > habit_occurrences.id]
+  action varchar [not null]
+  actual_at datetime(6)
+  recorded_at datetime(6) [not null]
+  source_type varchar [not null]
+  note text
+  idempotency_key varchar
+  previous_event_id binary(16) [ref: > habit_action_events.id]
+
+  Indexes {
+    idempotency_key [unique]
+    (occurrence_id, recorded_at)
+  }
+}
+
+Table exercise_definitions {
+  id binary(16) [pk]
+  category_code varchar [not null, ref: > exercise_categories.code]
+  name varchar [not null]
+  measurement_type varchar [not null]
+  met_value decimal
+  active boolean [not null, default: true]
+}
+
+Table exercise_sessions {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  habit_occurrence_id binary(16) [ref: > habit_occurrences.id]
+  started_at datetime(6) [not null]
+  ended_at datetime(6)
+  total_kcal decimal
+  calculation_method varchar
+  weight_snapshot_kg decimal
+  source_type varchar [not null]
+  created_at datetime(6) [not null]
+}
+
+Table exercise_session_items {
+  id binary(16) [pk]
+  session_id binary(16) [not null, ref: > exercise_sessions.id]
+  exercise_id binary(16) [not null, ref: > exercise_definitions.id]
+  order_no int [not null]
+  duration_sec int
+  distance_m decimal
+}
+
+Table exercise_sets {
+  id binary(16) [pk]
+  session_item_id binary(16) [not null, ref: > exercise_session_items.id]
+  set_no int [not null]
+  weight_kg decimal
+  reps int
+  duration_sec int
+  rest_sec int
+  distance_m decimal
+
+  Indexes {
+    (session_item_id, set_no) [unique]
+  }
+}
+
+Table foods {
+  id binary(16) [pk]
+  owner_user_id binary(16) [ref: > users.id]
+  source_type varchar [not null]
+  name varchar [not null]
+  brand varchar
+  barcode varchar
+  verification_status varchar [not null]
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+}
+
+Table food_nutrients {
+  food_id binary(16) [not null, ref: > foods.id]
+  nutrient_code varchar [not null, ref: > nutrient_definitions.code]
+  amount decimal [not null]
+  basis_quantity decimal [not null]
+  basis_unit_code varchar [not null, ref: > unit_definitions.code]
+
+  Indexes {
+    (food_id, nutrient_code) [pk]
+  }
+}
+
+Table food_allergens {
+  food_id binary(16) [not null, ref: > foods.id]
+  allergen_code varchar [not null, ref: > allergens.code]
+  presence_type varchar [not null]
+  source_type varchar [not null]
+  verified_at datetime(6)
+
+  Indexes {
+    (food_id, allergen_code) [pk]
+  }
+}
+
+Table meals {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  habit_occurrence_id binary(16) [ref: > habit_occurrences.id]
+  meal_type varchar [not null]
+  eaten_at datetime(6)
+  status varchar [not null]
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+}
+
+Table meal_items {
+  id binary(16) [pk]
+  meal_id binary(16) [not null, ref: > meals.id]
+  food_id binary(16) [not null, ref: > foods.id]
+  quantity decimal [not null]
+  unit_code varchar [not null, ref: > unit_definitions.code]
+  estimated_weight_g decimal
+}
+
+Table meal_item_nutrients {
+  meal_item_id binary(16) [not null, ref: > meal_items.id]
+  nutrient_code varchar [not null, ref: > nutrient_definitions.code]
+  amount decimal [not null]
+  source_type varchar [not null]
+  calculated_at datetime(6) [not null]
+
+  Indexes {
+    (meal_item_id, nutrient_code) [pk]
+  }
+}
+
+Table user_allergies {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  allergen_code varchar [not null, ref: > allergens.code]
+  severity varchar
+  reaction_note text
+
+  Indexes {
+    (user_id, allergen_code) [unique]
+  }
+}
+
+Table medication_products {
+  id binary(16) [pk]
+  external_code varchar
+  kind varchar [not null]
+  name varchar [not null]
+  ingredient_text text
+  manufacturer varchar
+  dosage_form_code varchar [ref: > dosage_form_definitions.code]
+  active boolean [not null, default: true]
+}
+
+Table medication_product_ingredients {
+  product_id binary(16) [not null, ref: > medication_products.id]
+  ingredient_id binary(16) [not null, ref: > medication_ingredients.id]
+  amount decimal
+  unit_code varchar [ref: > unit_definitions.code]
+  basis_quantity decimal
+  is_active_ingredient boolean [not null, default: true]
+
+  Indexes {
+    (product_id, ingredient_id) [pk]
+  }
+}
+
+Table medication_ingredient_interactions {
+  ingredient_id binary(16) [not null, ref: > medication_ingredients.id]
+  interacting_ingredient_id binary(16) [not null, ref: > medication_ingredients.id]
+  severity varchar [not null]
+  description text [not null]
+  evidence_source varchar
+
+  Indexes {
+    (ingredient_id, interacting_ingredient_id) [pk]
+  }
+}
+
+Table prescriptions {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  institution_id binary(16) [ref: > healthcare_institutions.id]
+  prescribed_at date
+  duration_days int
+  source_type varchar [not null]
+  created_at datetime(6) [not null]
+}
+
+Table user_medications {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  product_id binary(16) [ref: > medication_products.id]
+  prescription_id binary(16) [ref: > prescriptions.id]
+  display_name varchar [not null]
+  purpose varchar
+  started_on date
+  ended_on date
+  status varchar [not null]
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+}
+
+Table medication_schedules {
+  id binary(16) [pk]
+  user_medication_id binary(16) [not null, ref: > user_medications.id]
+  schedule_type varchar [not null]
+  interval_days int
+  is_prn boolean [not null, default: false]
+  timezone varchar [not null]
+  effective_from date [not null]
+  effective_to date
+  version int [not null]
+
+  Indexes {
+    (user_medication_id, version) [unique]
+  }
+}
+
+Table medication_schedule_days {
+  schedule_id binary(16) [not null, ref: > medication_schedules.id]
+  weekday int [not null]
+
+  Indexes {
+    (schedule_id, weekday) [pk]
+  }
+}
+
+Table medication_schedule_times {
+  id binary(16) [pk]
+  schedule_id binary(16) [not null, ref: > medication_schedules.id]
+  sequence_no int [not null]
+  local_time time
+  dose_amount decimal [not null]
+  dose_unit_code varchar [not null, ref: > unit_definitions.code]
+  meal_relation varchar
+  offset_minutes int
+
+  Indexes {
+    (schedule_id, sequence_no) [unique]
+  }
+}
+
+Table medication_dose_occurrences {
+  id binary(16) [pk]
+  schedule_id binary(16) [not null, ref: > medication_schedules.id]
+  scheduled_at datetime(6) [not null]
+  current_status varchar [not null]
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+
+  Indexes {
+    (schedule_id, scheduled_at) [unique]
+  }
+}
+
+Table medication_intake_events {
+  id binary(16) [pk]
+  occurrence_id binary(16) [not null, ref: > medication_dose_occurrences.id]
+  action varchar [not null]
+  actual_at datetime(6)
+  recorded_at datetime(6) [not null]
+  actual_amount decimal
+  unit_code varchar [ref: > unit_definitions.code]
+  memo text
+  idempotency_key varchar
+  previous_event_id binary(16) [ref: > medication_intake_events.id]
+
+  Indexes {
+    idempotency_key [unique]
+    (occurrence_id, recorded_at)
+  }
+}
+
+Table medication_inventory_transactions {
+  id binary(16) [pk]
+  user_medication_id binary(16) [not null, ref: > user_medications.id]
+  transaction_type varchar [not null]
+  quantity_delta decimal [not null]
+  unit_code varchar [not null, ref: > unit_definitions.code]
+  source_event_id binary(16)
+  occurred_at datetime(6) [not null]
+}
+
+Table observation_sessions {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  measured_at datetime(6) [not null]
+  source_type varchar [not null]
+  external_record_id varchar
+  context_json json
+
+  Indexes {
+    (user_id, measured_at)
+  }
+}
+
+Table health_observations {
+  id binary(16) [pk]
+  session_id binary(16) [not null, ref: > observation_sessions.id]
+  type_code varchar [not null, ref: > observation_types.code]
+  numeric_value decimal
+  text_value varchar
+  unit_code varchar [ref: > unit_definitions.code]
+  created_at datetime(6) [not null]
+
+  Indexes {
+    (session_id, type_code) [unique]
+  }
+}
+
+Table notification_rules {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  offset_minutes int [not null]
+  max_retries int [not null, default: 0]
+  retry_interval_minutes int
+  enabled boolean [not null, default: true]
+  created_at datetime(6) [not null]
+}
+
+Table notification_rule_habit_targets {
+  rule_id binary(16) [not null, ref: > notification_rules.id]
+  habit_id binary(16) [not null, ref: > habits.id]
+
+  Indexes {
+    (rule_id, habit_id) [pk]
+  }
+}
+
+Table notification_rule_medication_targets {
+  rule_id binary(16) [not null, ref: > notification_rules.id]
+  user_medication_id binary(16) [not null, ref: > user_medications.id]
+
+  Indexes {
+    (rule_id, user_medication_id) [pk]
+  }
+}
+
+Table notification_jobs {
+  id binary(16) [pk]
+  rule_id binary(16) [ref: > notification_rules.id]
+  habit_occurrence_id binary(16) [ref: > habit_occurrences.id]
+  medication_dose_occurrence_id binary(16) [ref: > medication_dose_occurrences.id]
+  job_type varchar [not null]
+  scheduled_at datetime(6) [not null]
+  status varchar [not null]
+  retry_no int [not null, default: 0]
+  created_at datetime(6) [not null]
+
+  Indexes {
+    (status, scheduled_at)
+    (habit_occurrence_id, job_type, retry_no) [unique]
+    (medication_dose_occurrence_id, job_type, retry_no) [unique]
+  }
+}
+
+Table notification_deliveries {
+  id binary(16) [pk]
+  job_id binary(16) [not null, ref: > notification_jobs.id]
+  channel varchar [not null]
+  provider_message_id varchar
+  status varchar [not null]
+  sent_at datetime(6)
+  delivered_at datetime(6)
+  opened_at datetime(6)
+  error_code varchar
+
+  Indexes {
+    provider_message_id [unique]
+  }
+}
+
+Table goals {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  category_code varchar [not null]
+  goal_type varchar [not null]
+  target_value decimal
+  unit_code varchar [ref: > unit_definitions.code]
+  started_on date [not null]
+  ended_on date
+  status varchar [not null]
+  created_at datetime(6) [not null]
+}
+
+Table reward_ledger {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  category_code varchar
+  reward_type varchar [not null]
+  amount decimal [not null]
+  reason_type varchar [not null]
+  reason_id binary(16)
+  reversal_of_id binary(16) [ref: > reward_ledger.id]
+  occurred_at datetime(6) [not null]
+
+  Indexes {
+    (user_id, occurred_at)
+  }
+}
+
+Table analytics_events {
+  event_id binary(16) [not null]
+  occurred_at datetime(6) [not null]
+  received_at datetime(6) [not null]
+  user_id binary(16) [ref: > users.id]
+  anonymous_id varchar
+  session_id binary(16)
+  event_name varchar [not null]
+  screen_name varchar
+  properties_json json [not null]
+  schema_version int [not null]
+
+  Indexes {
+    (event_id, occurred_at) [pk]
+    (user_id, occurred_at)
+    (event_name, occurred_at)
+  }
+}
+
+Table ai_jobs {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  job_type varchar [not null]
+  status varchar [not null]
+  model_provider varchar
+  model_name varchar
+  prompt_version varchar
+  requested_at datetime(6) [not null]
+  completed_at datetime(6)
+}
+
+Table ai_job_outputs {
+  id binary(16) [pk]
+  job_id binary(16) [not null, ref: > ai_jobs.id]
+  output_json json [not null]
+  confidence decimal
+  safety_flags json
+  accepted_at datetime(6)
+}
+
+Table integration_connections {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  provider varchar [not null]
+  status varchar [not null]
+  scopes json [not null]
+  token_reference varchar
+  connected_at datetime(6) [not null]
+  disconnected_at datetime(6)
+
+  Indexes {
+    (user_id, provider) [unique]
+  }
+}
+
+Table external_record_mappings {
+  id binary(16) [pk]
+  connection_id binary(16) [not null, ref: > integration_connections.id]
+  external_id varchar [not null]
+  internal_type varchar [not null]
+  internal_id binary(16) [not null]
+  source_updated_at datetime(6)
+
+  Indexes {
+    (connection_id, external_id) [unique]
+  }
+}
+
+Table healthcare_connections {
+  id binary(16) [pk]
+  user_id binary(16) [not null, ref: > users.id]
+  institution_id binary(16) [not null, ref: > healthcare_institutions.id]
+  status varchar [not null]
+  connected_at datetime(6)
+  disconnected_at datetime(6)
+}
+
+Table healthcare_data_consents {
+  id binary(16) [pk]
+  connection_id binary(16) [not null, ref: > healthcare_connections.id]
+  purpose varchar [not null]
+  data_categories json [not null]
+  valid_from datetime(6) [not null]
+  valid_to datetime(6)
+  withdrawn_at datetime(6)
+}
+
+Table audit_logs {
+  id binary(16) [pk]
+  actor_id binary(16)
+  actor_type varchar [not null]
+  action varchar [not null]
+  resource_type varchar [not null]
+  resource_id binary(16)
+  occurred_at datetime(6) [not null]
+  result varchar [not null]
+  metadata_json json
+}
