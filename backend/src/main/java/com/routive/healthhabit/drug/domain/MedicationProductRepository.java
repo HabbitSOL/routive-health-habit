@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface MedicationProductRepository extends JpaRepository<MedicationProduct, UUID> {
 
+    Optional<MedicationProduct> findByExternalCode(String externalCode);
+
     @Query("""
             select product
             from MedicationProduct product
