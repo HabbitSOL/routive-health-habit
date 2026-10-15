@@ -292,7 +292,7 @@ MVP 제외 범위를 임의로 다시 추가하지 말고, 변경이 필요하�
 
 ## 12. 다음 권장 작업
 
-> 공공 적재 구현(2026-10-15): feat/backend/public-drug-import에서 e약은요 수집·갱신·이력·부분 재개, V7 및 상세 imageUrl/interactions를 구현. 실행용 12개 테이블, 로컬 H2·MariaDB 각각 94개 통과. 실제 MFDS 인증키가 없어 외부 실호출은 미검증이며 PUBLIC_DRUG_IMPORT.md를 따른다. 초기 PR #1이 아직 미병합이므로 새 PR의 선행 의존성을 확인한다. 새 작업 브랜치에 codex/를 붙이지 않는다.
+> 공공 적재 구현(2026-10-15): feat/backend/public-drug-import에서 e약은요 수집·갱신·이력·부분 재개, V7 및 상세 imageUrl/interactions를 구현. 실행용 12개 테이블, 로컬 H2·MariaDB 각각 95개 통과. 실제 MFDS 인증키가 없어 외부 실호출은 미검증이며 PUBLIC_DRUG_IMPORT.md를 따른다. 초기 PR #1이 아직 미병합이므로 새 PR의 선행 의존성을 확인한다. 새 작업 브랜치에 codex/를 붙이지 않는다.
 
 > 사전 검증 보강(2026-10-15): 사전 통합 테스트 12개 추가, 리터럴 검색·동명 제품 ID 정렬·잘못된 요청 JSON 400·오프셋 범위 처리 보완. H2와 실제 MariaDB 11.4.8 전체 각각 71개 통과. `backend/DRUG_DICTIONARY_API.md`와 최신 개발 기록을 확인한다. 다음 구현은 공공 데이터 적재와 개인 복약 등록이며 이전 59개 테스트 기록은 당시 이력이다.
 
