@@ -292,6 +292,8 @@ MVP 제외 범위를 임의로 다시 추가하지 말고, 변경이 필요하�
 
 ## 12. 다음 권장 작업
 
+> 사전 검증 보강(2026-10-15): 사전 통합 테스트 12개 추가, 리터럴 검색·동명 제품 ID 정렬·잘못된 요청 JSON 400·오프셋 범위 처리 보완. H2와 실제 MariaDB 11.4.8 전체 각각 71개 통과. `backend/DRUG_DICTIONARY_API.md`와 최신 개발 기록을 확인한다. 다음 구현은 공공 데이터 적재와 개인 복약 등록이며 이전 59개 테스트 기록은 당시 이력이다.
+
 > GitHub 연결(2026-10-15): 비공개 저장소 `https://github.com/1214alex/routive-health-habit`. main은 초기 구조, develop은 통합 기준이며 최초 구현은 `codex/chore/initial-import`의 PR #1에 있다. PR 검토·병합 전에는 작업 브랜치에서 코드를 확인한다. GitHub 요금제 제한으로 비공개 브랜치 강제 보호는 미적용이다. 시작 절차는 `development_roles/GitHub_저장소_시작하기.md` 참고.
 
 > 최신 구현(2026-10-15): 프로필 부분 수정, 기본 프로필 온보딩 완료, 동의 조회·철회·재동의와 V6 구현 완료. H2 59개 통과(2026-10-14), 실제 MariaDB 11.4.8 59개 통과(2026-10-15). 요청 예시는 `backend/PROFILE_ONBOARDING_API.md`, 최신 검증·미구현 범위는 `backend/DEVELOPMENT_LOG.md` 참고. 다음 제품 개발은 의약품 사전 검증·데이터 적재 및 개인 복약 등록이다.

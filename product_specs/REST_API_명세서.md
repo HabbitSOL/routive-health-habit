@@ -227,8 +227,10 @@ GET /users/me에 profile 객체가 추가되며 PATCH 응답은 프로필 객체
 
 | 메서드 | 경로 | 설명 | 인증 |
 |---|---|---|:---:|
-| GET | `/drugs?keyword=&page=&size=` | 의약품 검색 | 정책 확정 |
-| GET | `/drugs/{drugId}` | 의약품 상세 | 정책 확정 |
+| GET | `/drugs?keyword=&page=&size=` | 의약품 검색 | N |
+| GET | `/drugs/{drugId}` | 의약품 상세 | N |
+
+구현된 입력 범위·정렬·빈 결과·오류 응답은 [의약품 사전 API](../backend/DRUG_DICTIONARY_API.md)를 기준으로 한다.
 
 ### 개인 복약
 
