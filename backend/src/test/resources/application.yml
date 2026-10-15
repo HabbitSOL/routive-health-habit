@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:health_habit;MODE=MariaDB;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  flyway:
+    enabled: false
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+    hibernate:
+      ddl-auto: create-drop
+
+auth:
+  jwt:
+    issuer: health-habit-api-test
+    secret: test-secret-key-must-be-at-least-32-bytes-long
+    access-token-seconds: 3600
+    refresh-token-seconds: 2592000
+  email-token-seconds: 1800
+  password-reset-token-seconds: 1800
+
+social:
+  google:
+    client-id: test-google-client-id
+
+app:
+  mail:
+    mode: console
+    from: test@example.com
+    verification-base-url: http://localhost/verify-email
+    password-reset-base-url: http://localhost/reset-password
+
+logging:
+  level:
+    org.hibernate.orm.connections: WARN
