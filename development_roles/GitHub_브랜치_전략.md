@@ -88,9 +88,10 @@ new-feature
 
 ## 4. 브랜치 이름 규칙
 
-Codex에서 생성하는 작업 브랜치는 앱 규칙에 따라 `codex/` 접두어를 붙인다.
-예: `codex/feat/backend/meal-record-api`, `codex/chore/initial-import`.
-접두어 뒤에는 아래 유형·영역 규칙을 동일하게 적용하고 PR 대상은 `develop`으로 한다.
+새 작업 브랜치는 생성 주체와 관계없이 아래 유형·영역 규칙을 동일하게 적용하고 PR 대상은 `develop`으로 한다.
+사용자 요청에 따라 `codex/` 접두어는 붙이지 않는다.
+예: `feat/backend/meal-record-api`, `fix/backend/drug-search`, `docs/branch-strategy`.
+기존 브랜치명과 커밋 이력은 별도 요청 없이 변경하지 않는다.
 
 ```text
 <유형>/<영역>/<짧은-작업명>
