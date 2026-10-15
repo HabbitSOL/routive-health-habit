@@ -231,6 +231,7 @@ GET /users/me에 profile 객체가 추가되며 PATCH 응답은 프로필 객체
 | GET | `/drugs/{drugId}` | 의약품 상세 | N |
 
 구현된 입력 범위·정렬·빈 결과·오류 응답은 [의약품 사전 API](../backend/DRUG_DICTIONARY_API.md)를 기준으로 한다.
+공공 데이터 적재 구현에서 상세 응답에 imageUrl·interactions 필드를 추가했다. 적재는 운영자 시작 설정으로 실행하며 사용자용 적재 API는 없다. 실제 데이터 적용 여부는 출처와 적재 이력으로 확인한다.
 
 ### 개인 복약
 

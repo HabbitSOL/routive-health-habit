@@ -4,6 +4,8 @@
 
 의약품 사전의 검색·정렬·오류 응답과 검증 범위는 [DRUG_DICTIONARY_API.md](DRUG_DICTIONARY_API.md)를 참고합니다.
 
+공공 의약품 적재는 [PUBLIC_DRUG_IMPORT.md](PUBLIC_DRUG_IMPORT.md)를 따릅니다. 기본 비활성이며 MFDS_SERVICE_KEY와 명시적인 시작 플래그가 필요합니다. 실제 인증키의 외부 실호출은 미검증입니다.
+
 ## 기술 기준
 
 - Java 21 LTS
@@ -131,7 +133,7 @@ Google은 서명·발급자·대상 클라이언트·만료·발급 시각·사�
 .\scripts\Test-MariaDb.ps1 -MariaDbHome 'C:\tools\mariadb-11.4.8-winx64' -JavaHome 'C:\tools\jdk-21'
 ```
 
-도구가 `.tools/mariadb`, `.tools/java21`에 있으면 인수를 생략할 수 있습니다. 이 스크립트는 로컬 전용 임시 MariaDB를 시작하고 V1~V6 및 JPA 스키마 검증, 전체 테스트를 실행한 후 서버를 종료합니다. 테스트 데이터는 `.tools/db-test-*`에 남습니다. `.tools`는 Git에서 제외됩니다.
+도구가 `.tools/mariadb`, `.tools/java21`에 있으면 인수를 생략할 수 있습니다. 이 스크립트는 로컬 전용 임시 MariaDB를 시작하고 V1~V7 및 JPA 스키마 검증, 전체 테스트를 실행한 후 서버를 종료합니다. 테스트 데이터는 `.tools/db-test-*`에 남습니다. `.tools`는 Git에서 제외됩니다.
 
 테스트 구성과 최근 결과는 [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)에 기록합니다. Google은 로컬 RSA 서명, Kakao는 HTTP 모의 응답, SMTP는 실제 루프백 소켓을 사용합니다. 실제 공급자 로그인·외부 수신함 도착·모바일 화면 연동은 별도 검증이 필요합니다.
 
@@ -174,7 +176,7 @@ com.routive.healthhabit
 
 ## 다음 구현 순서
 
-1. 공공 의약품 데이터 출처 확정·적재·갱신 (사전 전용 테스트 완료)
+1. 실제 MFDS 인증키로 공공 적재·갱신 실행 및 제공자 응답 검증 (적재 코드·모의 검증 구현)
 2. 사전 상세에서 개인 복약 등록
 3. 복약 일정과 실제 복용 기록
 4. 습관, 식사, 알림 순으로 확장
