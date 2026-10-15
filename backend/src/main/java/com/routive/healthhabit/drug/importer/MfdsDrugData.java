@@ -37,8 +37,28 @@ public record MfdsDrugData(String externalCode, String name, String manufacturer
 
     private static String plain(String value) {
         if (value == null) return null;
-        String text = HtmlUtils.htmlUnescape(value.replaceAll("(?i)<br\\s*/?>|</p\\s*>", "\n")
-                .replaceAll("<[^>]+>", "")).strip();
+        String decoded = HtmlUtils.htmlUnescape(value);
+        StringBuilder output = new StringBuilder(decoded.length());
+        for (int index = 0; index < decoded.length();) {
+            char current = decoded.charAt(index);
+            if (current == '<' && index + 1 < decoded.length()) {
+                char next = decoded.charAt(index + 1);
+                if (Character.isLetter(next) || next == '/' || next == '!') {
+                    int end = decoded.indexOf('>', index + 1);
+                    if (end < 0) {
+                        output.append(decoded, index, decoded.length());
+                        break;
+                    }
+                    String tag = decoded.substring(index + 1, end).strip().toLowerCase(java.util.Locale.ROOT);
+                    if (tag.equals("br") || tag.equals("br/") || tag.startsWith("br ") || tag.equals("/p")) output.append('\n');
+                    index = end + 1;
+                    continue;
+                }
+            }
+            output.append(current);
+            index++;
+        }
+        String text = output.toString().strip();
         return text.isEmpty() ? null : bounded(text);
     }
 

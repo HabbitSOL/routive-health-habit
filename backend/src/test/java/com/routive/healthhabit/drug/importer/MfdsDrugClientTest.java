@@ -99,4 +99,14 @@ class MfdsDrugClientTest {
         }
         assertThat("한".repeat(22000).getBytes(StandardCharsets.UTF_8)).hasSize(66000);
     }
+    @Test void handlesEncodedTagsComparisonsAndLargeUnclosedMarkup() {
+        var row = new MfdsDrugRecord("990001", "<p>&lt;b&gt;시험약&lt;/b&gt;</p>", null,
+                "<p>용량 < 3mg</p>", null, null, null, null, null, null, null, null);
+        var data = MfdsDrugData.from(row);
+        assertThat(data.name()).isEqualTo("시험약");
+        assertThat(data.efficacy()).isEqualTo("용량 < 3mg");
+        var large = new MfdsDrugRecord("990001", "시험약", null, "<a".repeat(100000),
+                null, null, null, null, null, null, null, null);
+        assertThatThrownBy(() -> MfdsDrugData.from(large)).isInstanceOf(IllegalArgumentException.class);
+    }
 }
