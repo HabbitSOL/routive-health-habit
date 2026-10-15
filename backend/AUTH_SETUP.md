@@ -10,7 +10,7 @@
 2. backend 폴더에서 DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET을 환경변수로 지정한다.
 3. Maven Wrapper로 실행한다: `./mvnw.cmd spring-boot:run`.
 4. 개발용 도구가 `.tools/java21`에 있다면 해당 JDK 디렉터리를 JAVA_HOME으로 설정한다.
-5. 최초 실행 시 Flyway V1~V6를 적용한다. V5 업데이트 이전에 로그인한 사용자는 재로그인이 필요하다. 프로필·온보딩·동의 변경은 PROFILE_ONBOARDING_API.md를 참고한다.
+5. 최초 실행 시 Flyway V1~V7를 적용한다. V5 업데이트 이전에 로그인한 사용자는 재로그인이 필요하다. 프로필·온보딩·동의 변경은 PROFILE_ONBOARDING_API.md를 참고한다.
 
 `.env.example`는 변수 목록이다. Maven 실행은 .env를 자동으로 불러오지 않는다.
 

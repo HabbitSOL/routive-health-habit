@@ -16,5 +16,5 @@
 
 - 사용자 요청에 따라 커밋 메시지는 development_roles/GitHub_브랜치_전략.md의 type(scope): 변경 내용 형식을 따른다.
 - main/develop 최초 기준 생성 이후 변경은 작업 브랜치에서 develop 대상 PR로 올린다. 승인 없이 병합하거나 main/develop에 직접 Push하지 않는다.
-- Codex 작업 브랜치는 codex/ 접두어와 유형·영역·작업명을 사용한다.
+- 사용자 요청에 따라 앞으로 생성하는 작업 브랜치에는 codex/ 접두어를 붙이지 않는다. 생성 주체와 관계없이 유형/영역/작업명 형식(예: feat/backend/meal-record-api, fix/backend/drug-search, docs/branch-strategy)을 사용한다. 기존 브랜치명과 커밋 이력은 별도 요청 없이 변경하지 않는다.
 - .env·인증키·로컬 도구와 DB·빌드 결과·임시 출력물을 커밋하지 않는다.

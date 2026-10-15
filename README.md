@@ -13,7 +13,7 @@
 | health_habit_*.md, *.sql, *.dbml, *.json | 전체 DB 설계와 데이터 사전 |
 | CODEX_HANDOFF.md | 개발 인수인계 |
 
-전체 DB 설계는 59개 테이블이며 현재 백엔드의 실행용 Flyway 스키마는 11개 테이블입니다.
+전체 DB 설계는 59개 테이블이며 현재 백엔드의 실행용 Flyway V1~V7 스키마는 12개 테이블입니다.
 실행·검증한 범위는 [개발 기록](backend/DEVELOPMENT_LOG.md)을 기준으로 확인합니다.
 
 ## 시작하기
@@ -31,7 +31,7 @@
 - 커밋 형식: type(scope): 변경 내용
 
 최초 저장소의 기준 커밋으로 main과 develop을 초기화합니다. 이후 구현 변경은 작업 브랜치에서 PR로 반영합니다.
-Codex가 생성하는 작업 브랜치는 codex/ 접두어를 사용합니다.
+새 작업 브랜치는 생성 주체와 관계없이 feat/backend/meal-record-api, fix/backend/drug-search, docs/branch-strategy처럼 유형·영역·작업명을 사용합니다. codex/ 접두어는 붙이지 않습니다.
 
 환경변수 파일, 인증키, 로컬 DB·도구, 빌드 결과는 커밋하지 않습니다.
 .env.example은 설정 예시이며 Spring Boot 실행 시 자동으로 읽히지 않습니다.

@@ -25,6 +25,10 @@ public class MedicationProduct {
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
+    @jakarta.persistence.Version
+    @Column(name = "record_version", nullable = false)
+    private Long recordVersion;
+
     @Column(name = "external_code", length = 128)
     private String externalCode;
 
@@ -58,6 +62,9 @@ public class MedicationProduct {
     @Column(columnDefinition = "TEXT")
     private String precautions;
 
+    @Column(columnDefinition = "TEXT")
+    private String interactions;
+
     @Column(name = "side_effects", columnDefinition = "TEXT")
     private String sideEffects;
 
@@ -87,6 +94,42 @@ public class MedicationProduct {
     private List<MedicationProductIngredient> ingredients = new ArrayList<>();
 
     protected MedicationProduct() {
+    }
+
+    public static MedicationProduct fromPublicData(MedicationProductData data) {
+        MedicationProduct product = new MedicationProduct();
+        product.id = UUID.randomUUID();
+        product.active = true;
+        product.applyPublicData(data);
+        return product;
+    }
+
+    public boolean applyPublicData(MedicationProductData data) {
+        if (externalCode != null && (!externalCode.equals(data.externalCode())
+                || !sourceName.equals(data.sourceName()))) {
+            throw new IllegalStateException("Public drug source conflict");
+        }
+        if (sourceUpdatedAt != null && (data.sourceUpdatedAt() == null
+                || data.sourceUpdatedAt().isBefore(sourceUpdatedAt))) return false;
+        if (java.util.Objects.equals(externalCode, data.externalCode())
+                && java.util.Objects.equals(name, data.name())
+                && java.util.Objects.equals(kind, data.kind())
+                && java.util.Objects.equals(manufacturer, data.manufacturer())
+                && java.util.Objects.equals(efficacy, data.efficacy())
+                && java.util.Objects.equals(usageInstructions, data.usage())
+                && java.util.Objects.equals(precautions, data.precautions())
+                && java.util.Objects.equals(interactions, data.interactions())
+                && java.util.Objects.equals(sideEffects, data.sideEffects())
+                && java.util.Objects.equals(storageMethod, data.storage())
+                && java.util.Objects.equals(imageUrl, data.imageUrl())
+                && java.util.Objects.equals(sourceUpdatedAt, data.sourceUpdatedAt())) return false;
+        externalCode = data.externalCode(); name = data.name();
+        normalizedName = data.name().toLowerCase(java.util.Locale.ROOT); kind = data.kind();
+        manufacturer = data.manufacturer(); efficacy = data.efficacy(); usageInstructions = data.usage();
+        precautions = data.precautions(); interactions = data.interactions(); sideEffects = data.sideEffects();
+        storageMethod = data.storage(); imageUrl = data.imageUrl(); sourceName = data.sourceName();
+        sourceUpdatedAt = data.sourceUpdatedAt();
+        return true;
     }
 
     public UUID getId() {
@@ -128,6 +171,8 @@ public class MedicationProduct {
     public String getPrecautions() {
         return precautions;
     }
+
+    public String getInteractions() { return interactions; }
 
     public String getSideEffects() {
         return sideEffects;

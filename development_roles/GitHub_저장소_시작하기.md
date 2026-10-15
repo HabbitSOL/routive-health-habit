@@ -23,7 +23,7 @@ git switch -c feat/backend/next-feature
 
 최초 업로드 PR이 아직 병합되지 않았다면 구현 소스는 codex/chore/initial-import에서 확인한다.
 초기 PR은 상대방 검토 후 develop으로 Squash Merge한다. main 반영은 develop에서 별도 릴리스 PR로 진행한다.
-Codex 작업 브랜치는 codex/ 접두어 뒤에 유형·영역·작업명을 붙인다.
+새 작업 브랜치에는 생성 주체와 관계없이 codex/ 접두어를 붙이지 않는다. feat/backend/next-feature처럼 유형·영역·작업명을 사용한다. 위 최초 업로드 브랜치명은 기존 이력으로 유지한다.
 
 ## 커밋과 PR
 

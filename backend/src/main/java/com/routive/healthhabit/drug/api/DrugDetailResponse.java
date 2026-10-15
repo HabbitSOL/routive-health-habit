@@ -20,7 +20,9 @@ public record DrugDetailResponse(
         List<Ingredient> ingredients,
         String sourceName,
         Instant sourceUpdatedAt,
-        String disclaimer
+        String disclaimer,
+        String imageUrl,
+        String interactions
 ) {
 
     private static final String DISCLAIMER = "이 정보는 진단이나 처방을 대신하지 않습니다.";
@@ -47,7 +49,9 @@ public record DrugDetailResponse(
                 ingredients,
                 product.getSourceName(),
                 product.getSourceUpdatedAt(),
-                DISCLAIMER
+                DISCLAIMER,
+                product.getImageUrl(),
+                product.getInteractions()
         );
     }
 
