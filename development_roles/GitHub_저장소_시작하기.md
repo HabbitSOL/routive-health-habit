@@ -2,9 +2,9 @@
 
 생성일: 2026-10-15
 
-- 저장소: https://github.com/1214alex/routive-health-habit
-- 소유자: 1214alex
-- 공개 범위: 비공개
+- 저장소: https://github.com/HabbitSOL/routive-health-habit
+- 소유자: HabbitSOL
+- 공개 범위: 공개 (2026-10-15 조직 이전 후 사용자 유지 확인)
 - 기본 브랜치: main
 - 통합 브랜치: develop
 - 최초 구현 업로드 브랜치: codex/chore/initial-import
@@ -14,7 +14,7 @@
 GitHub에서 접근 권한이 있는 계정으로 로그인한 뒤 실행한다.
 
 ```bash
-git clone https://github.com/1214alex/routive-health-habit.git
+git clone https://github.com/HabbitSOL/routive-health-habit.git
 cd routive-health-habit
 git switch develop
 git pull --ff-only origin develop
@@ -60,7 +60,10 @@ main은 승인 1명과 대화 해결도 필수로 설정한다.
 2026-10-15 적용 시도 결과: main·develop 모두 GitHub Pro 업그레이드 또는 공개 저장소 전환이 필요하다는 HTTP 403 응답으로 강제 보호를 적용하지 못했다.
 비공개 상태를 유지했다. 현재 PR·CI 절차는 팀 운영 규칙으로 준수해야 하며 GitHub가 직접 Push를 차단하는 상태는 아니다.
 
-최초 검토 PR: https://github.com/1214alex/routive-health-habit/pull/1
+최초 검토 PR: https://github.com/HabbitSOL/routive-health-habit/pull/1
+
+초기에는 개인 계정의 비공개 저장소로 생성했으며 이후 HabbitSOL 조직으로 이전되었다.
+위 비공개 보호 실패는 초기 설정 당시의 이력이다. 현재 공개 저장소의 보호 설정 여부는 GitHub에서 별도 확인한다.
 
 ## 로컬 환경
 
