@@ -22,7 +22,7 @@
 | 메일·링크 화면 | SMTP/콘솔 발송, /verify-email 및 /reset-password 화면 | 로컬 SMTP 소켓으로 실제 메일 전송·본문 확인, 공개 라우팅 검증. 브라우저/앱 E2E는 별도 |
 | 프로필·기본 온보딩 | 닉네임·생년월일·성별·키 부분 수정, 선택값 삭제, 최초 완료 시각, 탈퇴 시 프로필 삭제 | 입력 검증·반복 완료·사용자 격리 검증. 생활패턴 설문·신체측정은 후속 |
 | 동의 변경 | 동의 이력 조회, 철회·재동의, 버전 변경 이력 보존, 동시 요청 직렬화 | 필수 동의 철회 시 프로필 저장·온보딩 차단. 약관 게시 버전 검증 및 기존 데이터 보존·삭제 정책은 후속 |
-| GitHub·CI | HabbitSOL/routive-health-habit 공개 저장소, 초기 PR #1, H2·MariaDB CI | 사전 보완 원격 실행 각각 71개 통과. PR은 검토 대기. 초기 비공개 상태의 보호 설정 실패는 아래 날짜별 이력 참고 |
+| GitHub·CI | HabbitSOL/routive-health-habit 공개 저장소, 초기 PR #1·공공 적재 초안 PR #2 | 공공 적재 원격 H2·MariaDB 각각 95개 통과. #1 선행 병합 후 #2 브랜치 정리 필요 |
 | 후속 제품 기능 | 개인 복약·식사·습관·알림·통계는 아직 미구현 | 다음은 식약처 실인증키 검증과 개인 복약 등록 |
 ## 2. 구현된 API
 공통 접두어는 `/api/v1`입니다.
@@ -110,6 +110,9 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 빌드 중 Maven 저장소 메타데이터 401, Mockito 동적 에이전트, Windows MariaDB의 WSREP_ON 조회 경고가 있었으나 최종 검증은 성공했습니다.
 
 ### GitHub Actions 검증 — 2026-10-15
+
+- 공공 적재 최종 코드의 [PR #2 CI](https://github.com/HabbitSOL/routive-health-habit/actions/runs/38711767913): H2·MariaDB 각각 95개 통과, 실패·오류·건너뜀 0. V1~V7 적용 및 JPA validate 성공. 기준 커밋 cd08b75.
+- 아래 사전 71개 및 초기 59개는 이전 검증 이력입니다.
 
 - 사전 보완 커밋 00fc510의 [PR 실행](https://github.com/HabbitSOL/routive-health-habit/actions/runs/38695826200)이 성공했습니다. 원격 H2·MariaDB 각각 71개 통과, 실패·오류·건너뜀 0, Flyway V1~V6 적용 및 JPA validate 성공.
 - 아래 59개 결과는 초기 업로드 당시의 검증 이력입니다.
@@ -231,6 +234,7 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 - 새로 추가한 HTTP 모의/매핑 13개·DB 통합 11개를 실제 제공자 실호출과 구분. MFDS_SERVICE_KEY 미설정으로 외부 인증·실데이터 적재는 미검증.
 - 초기 PR #1 미병합 상태의 구현을 기반으로 하므로 [PR #2](https://github.com/HabbitSOL/routive-health-habit/pull/2)를 develop 대상 초안으로 생성. #1 선행 병합 후 브랜치 정리가 필요하며 임의 병합하지 않음.
 - API·실행 안내·환경 예시·개발 기록·노션을 갱신. 다음은 실인증키 검증과 개인 복약 등록.
+- 원격 PR #2 실행 38711767913에서 H2·MariaDB 각각 95개 통과 및 V7 검증 확인. 실제 제공자 HTTP는 모의 응답이며 실데이터 적재와 구분.
 
 ## 10. 이전 테스트 기록 (초기 구현, 현재 상태 아님)
 <details>
