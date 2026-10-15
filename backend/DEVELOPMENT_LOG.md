@@ -231,3 +231,14 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 	- 빌드 중 Flyway 관련 Maven 저장소 메타데이터 HTTP 401 경고와 Mockito 동적 에이전트 경고가 있었으나 이번 빌드·테스트는 성공했습니다.
 	
 </details>
+
+## 2026-10-16 · Android 3.1 데모 PR 준비 (현서)
+
+- develop 기준 codex/feat/android/signup-profile-demo 브랜치에 최초 Android 프로젝트를 추가했습니다.
+- 로그인·회원가입·동의 선택·인증/로그인 체험·프로필·내 정보 및 기존 홈/습관 데모를 포함합니다. 홈/습관은 기존 이동 확인용이며 3.2 신규 기능 완료를 뜻하지 않습니다.
+- 백엔드 소스·DB·API 계약 변경 없음. 비밀번호 8~16자+ASCII 특수문자는 현서 요청의 프론트 데모 정책이며 서버 규칙과 연동 전 조율이 필요합니다.
+- Windows/JBR 21.0.11/SDK 35: `:app:assembleDebug :app:lintDebug` 성공. Lint 오류 0, 경고 7. 첫 offline 시도는 Lint 의존성 캐시 누락으로 실패 후 온라인 재실행 성공.
+- 자동 테스트·실기기 E2E·실제 서버 연동은 실행하지 않았습니다. 과거 백엔드 테스트를 재실행한 것은 아닙니다.
+- API·토큰·서버 연결은 성준 담당으로 추후 진행. 3.1 상태: 프론트엔드 데모 구현 완료 · 서버 연동 대기.
+- 근거: android/README.md, android/AUTH_HANDOFF.md, android/DESIGN.md, android/app/src/main/.
+- Notion 동기화 대기: 지정 페이지 3f99280f6a7b817886c2e04f119a149c 조회가 현재 연결에서 NOT_FOUND로 실패하여 갱신하지 못했습니다.
