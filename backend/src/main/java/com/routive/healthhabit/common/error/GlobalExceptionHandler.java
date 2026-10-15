@@ -50,6 +50,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ErrorCode.DATA_CONFLICT.status()).body(ErrorResponse.of(ErrorCode.DATA_CONFLICT));
     }
 
+    @ExceptionHandler({
+            org.springframework.web.bind.MissingServletRequestParameterException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<ErrorResponse> handleInvalidParameter(Exception exception) {
+        return ResponseEntity.badRequest().body(ErrorResponse.of(ErrorCode.INVALID_REQUEST));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception exception) {
         log.error("Unhandled server error", exception);

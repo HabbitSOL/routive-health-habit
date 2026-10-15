@@ -17,9 +17,9 @@ public interface MedicationProductRepository extends JpaRepository<MedicationPro
             left join product.dosageForm dosageForm
             where product.active = true
               and (
-                lower(product.normalizedName) like lower(concat('%', :keyword, '%'))
-                or lower(coalesce(product.ingredientText, '')) like lower(concat('%', :keyword, '%'))
-                or lower(coalesce(product.manufacturer, '')) like lower(concat('%', :keyword, '%'))
+                lower(product.normalizedName) like lower(concat('%', :keyword, '%')) escape '!'
+                or lower(coalesce(product.ingredientText, '')) like lower(concat('%', :keyword, '%')) escape '!'
+                or lower(coalesce(product.manufacturer, '')) like lower(concat('%', :keyword, '%')) escape '!'
               )
             """)
     Page<MedicationProduct> search(@Param("keyword") String keyword, Pageable pageable);

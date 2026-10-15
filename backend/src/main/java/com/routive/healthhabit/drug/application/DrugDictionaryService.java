@@ -26,8 +26,13 @@ public class DrugDictionaryService {
     }
 
     public PageResponse<DrugSearchItem> search(String keyword, int page, int size) {
-        String normalizedKeyword = keyword.trim().toLowerCase(Locale.ROOT);
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("name").ascending());
+        String normalizedKeyword = keyword.trim().toLowerCase(Locale.ROOT)
+                .replace("!", "!!").replace("%", "!%").replace("_", "!_");
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("name", "id").ascending());
+        // JPA offsets are int-based even though Pageable exposes a long offset.
+        if (pageRequest.getOffset() > Integer.MAX_VALUE) {
+            throw new BusinessException(ErrorCode.INVALID_REQUEST);
+        }
         Page<DrugSearchItem> result = medicationProductRepository
                 .search(normalizedKeyword, pageRequest)
                 .map(DrugSearchItem::from);
