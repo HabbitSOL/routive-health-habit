@@ -276,3 +276,15 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 - API·토큰·서버 연결은 성준 담당으로 추후 진행. 3.1 상태: 프론트엔드 데모 구현 완료 · 서버 연동 대기.
 - 근거: android/README.md, android/AUTH_HANDOFF.md, android/DESIGN.md, android/app/src/main/.
 - Notion 동기화 대기: 지정 페이지 3f99280f6a7b817886c2e04f119a149c 조회가 현재 연결에서 NOT_FOUND로 실패하여 갱신하지 못했습니다.
+
+## 2026-10-16 · Android 3.2 홈 대시보드 (현서)
+
+- PR #3 병합 후 최신 develop에서 feat/android/home-dashboard 분기. 미반영 기록 화면 디테일을 포함.
+- 독립적인 습관/최근 식사/다음 복약 상태, 각 카드 재시도, 빠른 기록 이동, 닉네임 인사, 기록→홈 완료 수 동기화 구현.
+- 백엔드 소스·DB·API 계약 변경 없음. 화면용 데모 모델이며 실제 응답 규격 아님. 복약 일정 계산·실제 저장 없음.
+- Android CI: compile/testDebugUnitTest/lintDebug/assembleDebug. 백엔드 workflow에는 코드 경로 필터를 추가해 Android 전용 PR에서 백엔드 검사를 분리.
+- JBR 21.0.11 / SDK 35 / Windows 영문 임시 경로: testDebugUnitTest/lintDebug/assembleDebug --offline 성공. 단위 테스트 8개 통과, Lint 오류 0/경고 2.
+- 한글 작업 경로에서는 테스트 클래스 로딩 실패. 동일 소스의 영문 경로에서는 성공. 기기 UI/E2E·실제 API·토큰은 미검증.
+- 다음: 성준 API/응답 계약 연결, 실제 기기 확인. 3.2 프론트엔드 데모 구현 완료 · 서버 연동 대기.
+- 근거: android/HOME_HANDOFF.md, android/app/src/test/java/com/example/sol/feature/home/HomeViewModelTest.kt.
+- Notion 동기화 대기: 지정 개발 기록 페이지 3f99280f6a7b817886c2e04f119a149c 재조회가 NOT_FOUND. 접근 가능한 창업 페이지와 별개 권한 문제.
