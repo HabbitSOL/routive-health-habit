@@ -15,96 +15,169 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.sol.core.ui.*
-import com.example.sol.feature.home.viewmodel.HomeUiState
+import com.example.sol.feature.home.data.*
+import com.example.sol.feature.home.viewmodel.*
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(state: HomeUiState, onOpen: (String) -> Unit, onReload: () -> Unit,
-    onLoading: () -> Unit, onError: () -> Unit, onExit: () -> Unit) {
+fun HomeScreen(state: HomeUiState, mode: DemoMode, nickname: String?, onOpen: (String) -> Unit,
+    onReload: () -> Unit, onRetry: (HomeSection) -> Unit, onMode: (DemoMode) -> Unit, onExit: () -> Unit) {
     var toolsExpanded by rememberSaveable { mutableStateOf(false) }
     var showAd by rememberSaveable { mutableStateOf(true) }
-    val today = LocalDate.now()
+    var quickRecord by rememberSaveable { mutableStateOf(false) }
+    var today by remember { mutableStateOf(LocalDate.now()) }
+    val owner = LocalLifecycleOwner.current
+    // Refresh the display date on return and across midnight. This is not a server timezone contract.
+    DisposableEffect(owner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) today = LocalDate.now()
+        }
+        owner.lifecycle.addObserver(observer)
+        onDispose { owner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(Unit) { while (true) { delay(30_000); today = LocalDate.now() } }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(22.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(today.format(DateTimeFormatter.ofPattern("M월 d일 EEEE", Locale.KOREAN)),
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("오늘도, 나를 위한 한 걸음", style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(today.format(DateTimeFormatter.ofPattern("M월 d일 EEEE", Locale.KOREAN)),
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(nickname?.takeIf { it.isNotBlank() }?.let { "${it}님, 반가워요" } ?: "오늘도, 나를 위한 한 걸음",
+                    style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            }
+            TextButton(onClick = onReload) { Text("새로고침") }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            val start = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-            repeat(7) { offset ->
-                val date = start.plusDays(offset.toLong())
-                val selected = date == today
-                Column(Modifier.weight(1f).clip(RoundedCornerShape(18.dp))
-                    .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                    .padding(vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    val color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                    Text(listOf("일", "월", "화", "수", "목", "금", "토")[offset], color = color,
-                        style = MaterialTheme.typography.labelMedium)
-                    Text(date.dayOfMonth.toString(), color = color,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+        WeekStrip(today)
+        Surface(shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+            Text(if (mode == DemoMode.EMPTY) "데모 · 기록을 시작하기 전 화면이에요" else "데모 · 아래 정보는 실제 기록이 아닌 예시예요",
+                Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.labelMedium)
+        }
+        SolCard("오늘의 습관", outlined = true) {
+            SectionContent(state.habits, "아직 등록한 습관이 없어요", "작게 시작할 습관을 골라보세요.",
+                { onRetry(HomeSection.HABITS) }) { value ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("${value.completed} / ${value.total}", style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.primary)
+                    Text("실천 완료 · 예시", style = MaterialTheme.typography.labelMedium)
+                }
+                LinearProgressIndicator(progress = { if (value.total == 0) 0f else (value.completed.toFloat() / value.total).coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(8.dp)))
+                Text(if (value.completed == value.total) "오늘의 예시 습관을 모두 완료했어요!" else "남은 습관도 나의 속도로 실천해요.",
+                    style = MaterialTheme.typography.bodyMedium)
+            }
+            TextButton(onClick = { onOpen("habit") }) { Text("습관 확인하고 기록하기 →") }
+        }
+        Button(onClick = { quickRecord = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+            shape = RoundedCornerShape(18.dp)) { Text("＋ 빠른 기록", style = MaterialTheme.typography.titleMedium) }
+        Text("지금 챙길 일", style = MaterialTheme.typography.titleLarge)
+        Card(onClick = { onOpen("habit") }, shape = RoundedCornerShape(24.dp)) {
+            Box(Modifier.fillMaxWidth().heightIn(min = 150.dp)) {
+                MorningArt(Modifier.matchParentSize())
+                Box(Modifier.matchParentSize().background(Brush.horizontalGradient(listOf(Pine, Pine.copy(alpha = .45f)))))
+                Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("나만의 습관", color = Color.White, style = MaterialTheme.typography.titleLarge)
+                    Text("작은 실천부터 시작해요", color = Color.White)
+                    Text("습관 화면 보기 →", color = Color.White, style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
-        when (state) {
-            HomeUiState.Loading -> SolCard("오늘의 정보를 불러오는 중") {
-                CircularProgressIndicator(); SolButton("미리보기 끝내기", onReload)
+        SolCard("최근 식사", outlined = true) {
+            SectionContent(state.meal, "아직 기록한 식사가 없어요", "오늘 먹은 식사부터 남겨보세요.",
+                { onRetry(HomeSection.MEAL) }) { value ->
+                InfoBadge(value.timeLabel, Peach)
+                Text(value.title, style = MaterialTheme.typography.titleMedium)
+                Text(value.description, style = MaterialTheme.typography.bodyMedium)
             }
-            HomeUiState.Error -> SolCard("잠시 연결이 어려워요") {
-                Text("오류 화면 예시입니다. 다시 시도해 주세요.")
-                SolButton("다시 시도", onReload)
+            TextButton(onClick = { onOpen("meal") }) { Text("식사 화면으로 →") }
+        }
+        SolCard("다음 복약 일정", outlined = true) {
+            SectionContent(state.medication, "등록한 복약 일정이 없어요", "복약 화면에서 일정을 확인할 수 있어요.",
+                { onRetry(HomeSection.MEDICATION) }) { value ->
+                InfoBadge(value.scheduledLabel, Lavender)
+                Text(value.title, style = MaterialTheme.typography.titleMedium)
+                Text(value.description, style = MaterialTheme.typography.bodyMedium)
             }
-            is HomeUiState.Ready -> {
-                SolCard("오늘의 기록", outlined = true) {
-                    Text("데모 · 아직 기록이 없어요", style = MaterialTheme.typography.labelMedium)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        listOf("습관", "식사", "복약 예정").forEach { label ->
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium)
-                                Text("—", style = MaterialTheme.typography.headlineSmall)
-                            }
-                        }
-                    }
-                }
-                Text("지금 챙길 일", style = MaterialTheme.typography.titleLarge)
-                Card(onClick = { onOpen("habit") }, shape = RoundedCornerShape(24.dp)) {
-                    Box(Modifier.fillMaxWidth().heightIn(min = 156.dp)) {
-                        MorningArt(Modifier.matchParentSize())
-                        Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
-                            listOf(Pine, Pine.copy(alpha = .45f)))))
-                        Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("나만의 습관", color = Color.White, style = MaterialTheme.typography.titleLarge)
-                            Text("작은 실천부터 시작해요", color = Color.White)
-                            Text("습관 화면 보기 →", color = Color.White, style = MaterialTheme.typography.labelLarge)
-                        }
-                    }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ActivityTile("식사 기록", "오늘의 식사를\n간편하게 기록해요", Peach,
-                        { onOpen("meal") }, Modifier.weight(1f))
-                    ActivityTile("복약 일정", "잊지 않고\n챙겨보세요", Lavender,
-                        { onOpen("medication") }, Modifier.weight(1f))
-                }
-            }
+            TextButton(onClick = { onOpen("medication") }) { Text("복약 화면으로 →") }
         }
         TextButton(onClick = { onOpen("drugdictionary") }) { Text("의약품 사전 둘러보기 →") }
         if (showAd) AdPreview()
-        TextButton(onClick = { toolsExpanded = !toolsExpanded }) {
-            Text(if (toolsExpanded) "데모 도구 닫기 −" else "데모 도구 +")
+        TextButton(onClick = { toolsExpanded = !toolsExpanded }) { Text(if (toolsExpanded) "데모 도구 닫기 −" else "데모 도구 +") }
+        if (toolsExpanded) SolCard("화면 상태 체험") {
+            Text("예시 모드를 바꾸면 습관 완료 상태도 초기화돼요. 실제 데이터는 저장하지 않아요.", style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = { onMode(DemoMode.EMPTY) }) { Text("기록 없음 보기") }
+            TextButton(onClick = { onMode(DemoMode.SAMPLE) }) { Text("예시 데이터 보기") }
+            TextButton(onClick = { onMode(DemoMode.PARTIAL_ERROR) }) { Text("식사만 오류 보기") }
+            TextButton(onClick = onReload) { Text("다시 불러오기 · 로딩 체험") }
+            TextButton(onClick = { showAd = !showAd }) { Text(if (showAd) "광고 예시 숨기기" else "광고 예시 보기") }
+            TextButton(onClick = onExit) { Text("데모 종료 · 로그인으로") }
         }
-        if (toolsExpanded) {
-            SolCard("화면 상태 미리보기") {
-                TextButton(onClick = onLoading) { Text("불러오는 중 보기") }
-                TextButton(onClick = onError) { Text("오류 · 재시도 보기") }
-                TextButton(onClick = { showAd = !showAd }) { Text(if (showAd) "광고 예시 숨기기" else "광고 예시 보기") }
-                TextButton(onClick = onExit) { Text("데모 종료 · 로그인으로") }
+    }
+    if (quickRecord) ModalBottomSheet(onDismissRequest = { quickRecord = false }) {
+        Column(Modifier.navigationBarsPadding().padding(horizontal = 24.dp).padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("무엇을 기록할까요?", style = MaterialTheme.typography.headlineSmall)
+            Text("습관은 기록 체험, 식사·복약은 준비 중인 안내 화면으로 이동해요.", style = MaterialTheme.typography.bodyMedium)
+            listOf("habit" to "습관 실천 기록", "meal" to "식사 기록 · 준비 중", "medication" to "복약 기록 · 준비 중").forEach { (route, title) ->
+                OutlinedButton(onClick = { quickRecord = false; onOpen(route) }, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                    Text(title, Modifier.weight(1f)); Text("→")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun <T> ColumnScope.SectionContent(state: SectionState<T>, emptyTitle: String, emptyHint: String,
+    onRetry: () -> Unit, ready: @Composable ColumnScope.(T) -> Unit) {
+    when (state) {
+        SectionState.Loading -> {
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+            Text("정보를 불러오고 있어요", style = MaterialTheme.typography.bodyMedium)
+        }
+        SectionState.Empty -> {
+            Text(emptyTitle, style = MaterialTheme.typography.titleMedium)
+            Text(emptyHint, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        SectionState.Error -> {
+            Text("이 정보를 불러오지 못했어요", color = MaterialTheme.colorScheme.error)
+            Text("다른 카드는 계속 이용할 수 있어요.", style = MaterialTheme.typography.bodySmall)
+            OutlinedButton(onClick = onRetry) { Text("이 항목만 다시 시도") }
+        }
+        is SectionState.Ready -> ready(state.value)
+    }
+}
+
+@Composable
+private fun InfoBadge(text: String, color: Color) {
+    Surface(shape = RoundedCornerShape(12.dp), color = color, contentColor = Ink) {
+        Text(text, Modifier.padding(horizontal = 12.dp, vertical = 8.dp), style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+@Composable
+private fun WeekStrip(today: LocalDate) {
+    val start = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        repeat(7) { offset ->
+            val date = start.plusDays(offset.toLong())
+            val selected = date == today
+            val color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+            Column(Modifier.weight(1f).clip(RoundedCornerShape(18.dp))
+                .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent).padding(vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(listOf("일", "월", "화", "수", "목", "금", "토")[offset], color = color, style = MaterialTheme.typography.labelMedium)
+                Text(date.dayOfMonth.toString(), color = color, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
             }
         }
     }

@@ -1,0 +1,37 @@
+name: Android CI
+
+on:
+  push:
+    branches: [main, develop, 'feat/android/**', 'fix/android/**', 'chore/**', 'test/**', 'refactor/**']
+    paths: ['android/**', '.github/workflows/android-ci.yml']
+  pull_request:
+    branches: [develop, main]
+    paths: ['android/**', '.github/workflows/android-ci.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android build, lint and unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK components
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' 'platform-tools'
+      - name: Compile, test, lint and assemble Android app
+        run: bash gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
