@@ -26,9 +26,8 @@ import com.example.sol.core.ui.*
 import com.example.sol.R
 
 @Composable
-fun HabitScreen(onBack: () -> Unit) {
+fun HabitScreen(completed: Set<Int>, onToggle: (Int) -> Unit, onBack: () -> Unit) {
     var filter by rememberSaveable { mutableStateOf("전체") }
-    var completed by rememberSaveable { mutableStateOf(listOf(0)) }
     var showAddInfo by rememberSaveable { mutableStateOf(false) }
     val names = listOf("아침 스트레칭", "물 마시기", "저녁 산책")
     val subtitles = listOf("가볍게 몸을 깨우는 시간", "내가 정한 목표에 맞춰", "하루를 천천히 마무리해요")
@@ -76,7 +75,7 @@ fun HabitScreen(onBack: () -> Unit) {
                     }
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .6f))
-                Text("예시 습관을 눌러 기록을 체험해 보세요.\n변경은 이 화면에만 반영돼요.",
+                Text("예시 습관을 눌러 기록을 체험해 보세요.\n완료 상태는 홈에도 반영돼요. 실제 저장은 하지 않아요.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -120,7 +119,7 @@ fun HabitScreen(onBack: () -> Unit) {
                         Text(subtitles[index], style = MaterialTheme.typography.bodyMedium)
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             Button(onClick = {
-                                completed = if (isDone) completed - index else completed + index
+                                onToggle(index)
                             }, shape = RoundedCornerShape(14.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = if (isDone) Color.White.copy(alpha = .9f) else Pine,
                                     contentColor = if (isDone) Pine else Color.White)) {

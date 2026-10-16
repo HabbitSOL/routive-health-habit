@@ -48,6 +48,7 @@ fun SolApp() {
     val account: DemoAccountViewModel = viewModel()
     val signup: SignupViewModel = viewModel()
     val profile: ProfileViewModel = viewModel()
+    val home: HomeViewModel = viewModel()
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route ?: "login"
     val showBottom = route !in listOf("login", "signup", "profile-onboarding", "profile-edit")
@@ -55,6 +56,7 @@ fun SolApp() {
         account.clear()
         signup.reset()
         profile.load(null)
+        home.reset()
         nav.navigate("login") { popUpTo(nav.graph.id) { inclusive = true }; launchSingleTop = true }
     }
     // Process recreation does not restore a fake authenticated session.
@@ -93,13 +95,14 @@ fun SolApp() {
                 })
             }
             composable("home") {
-                val model: HomeViewModel = viewModel()
-                HomeScreen(model.state, onOpen = { nav.navigate(it) { launchSingleTop = true } },
-                    onReload = model::reload, onLoading = model::previewLoading, onError = model::previewError,
+                HomeScreen(home.state, home.mode, account.profile?.nickname,
+                    onOpen = { nav.navigate(it) { launchSingleTop = true } },
+                    onReload = home::reload, onRetry = home::retry, onMode = home::selectMode,
                     onExit = exitDemo)
             }
             composable("habit") {
-                HabitScreen(onBack = { nav.popBackStack("home", inclusive = false) })
+                HabitScreen(completed = home.completedHabits, onToggle = home::toggleHabit,
+                    onBack = { nav.popBackStack("home", inclusive = false) })
             }
             composable("profile-onboarding") {
                 BackHandler { exitDemo() }
