@@ -3,9 +3,10 @@ name: Backend CI
 on:
   push:
     branches: [main, develop, 'codex/**', 'feat/**', 'fix/**', 'chore/**', 'test/**', 'refactor/**', 'hotfix/**', 'release/**']
-    paths: ['backend/**', '.github/workflows/backend-ci.yml']
+    paths: ['backend/**', '!backend/**/*.md', '.github/workflows/backend-ci.yml']
   pull_request:
     branches: [main, develop]
+    paths: ['backend/**', '!backend/**/*.md', '.github/workflows/backend-ci.yml']
   workflow_dispatch:
 
 permissions:
