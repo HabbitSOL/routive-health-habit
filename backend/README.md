@@ -17,6 +17,12 @@
 
 ## 현재 구현 범위
 
+- 고정시간 복약 일정·하루 회차 생성/조회: [MEDICATION_SCHEDULE_API.md](MEDICATION_SCHEDULE_API.md).
+- V9·17개 실행용 테이블. 자동 생성·식사 연동·실제 복용 행동·알림은 후속입니다.
+
+- 개인 복약 등록·목록·상세·부분 수정·중지·종료: [PERSONAL_MEDICATION_API.md](PERSONAL_MEDICATION_API.md).
+- 개인 복약 기본정보 API의 schedule 필드는 여전히 미지원이며 별도 일정 API를 사용합니다.
+
 - `GET /api/v1/health`: 서버 상태 확인
 - `POST /api/v1/auth/signup`: 필수 동의와 함께 회원가입
 - `POST /api/v1/auth/email-verifications/confirm`: 이메일 인증 완료 및 로그인 토큰 발급

@@ -1,0 +1,23 @@
+CREATE TABLE personal_medications (
+    id BINARY(16) NOT NULL PRIMARY KEY,
+    user_id BINARY(16) NOT NULL,
+    drug_id BINARY(16) NULL,
+    display_name VARCHAR(255) NOT NULL,
+    custom_name VARCHAR(255) NULL,
+    medication_type VARCHAR(32) NOT NULL,
+    purpose VARCHAR(1000) NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NULL,
+    memo VARCHAR(2000) NULL,
+    status VARCHAR(32) NOT NULL,
+    request_key VARCHAR(36) NOT NULL,
+    request_hash VARCHAR(64) NOT NULL,
+    version BIGINT NOT NULL DEFAULT 0,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    closed_at DATETIME(6) NULL,
+    CONSTRAINT fk_personal_medication_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_personal_medication_product FOREIGN KEY (drug_id) REFERENCES medication_products(id),
+    CONSTRAINT uk_personal_medication_request UNIQUE (user_id, request_key),
+    KEY ix_personal_medication_user_status (user_id, status, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
