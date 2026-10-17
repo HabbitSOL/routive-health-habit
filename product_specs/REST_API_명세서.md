@@ -625,6 +625,10 @@ GET /api/v1/drugs/{drugId}
 
 ### 6.14 개인 복약 생성
 
+> 2026-10-17 1차 구현: 기본정보 등록·조회·수정·중지·종료만 지원합니다.
+> 아래 schedule 포함 예시는 후속 목표입니다. 현재 schedule 입력은 400으로 거절하며 일정·회차를 생성하지 않습니다.
+> 실제 요청/응답·version·Idempotency-Key·지원 유형은 backend/PERSONAL_MEDICATION_API.md를 기준으로 연결합니다.
+
 ```http
 POST /api/v1/medications
 Authorization: Bearer {accessToken}

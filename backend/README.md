@@ -17,6 +17,9 @@
 
 ## 현재 구현 범위
 
+- 개인 복약 등록·목록·상세·부분 수정·중지·종료: [PERSONAL_MEDICATION_API.md](PERSONAL_MEDICATION_API.md).
+- V8·13개 실행용 테이블. 일정·회차·알림은 후속이며 아직 지원하지 않습니다.
+
 - `GET /api/v1/health`: 서버 상태 확인
 - `POST /api/v1/auth/signup`: 필수 동의와 함께 회원가입
 - `POST /api/v1/auth/email-verifications/confirm`: 이메일 인증 완료 및 로그인 토큰 발급

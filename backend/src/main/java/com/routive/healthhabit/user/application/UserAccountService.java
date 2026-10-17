@@ -7,9 +7,12 @@ public class UserAccountService {
     private final UserRepository users; private final UserConsentRepository consents;
     private final SocialAccountRepository socials; private final TokenService tokens;
     private final UserProfileRepository profiles;
-    public UserAccountService(UserRepository users, UserConsentRepository consents, SocialAccountRepository socials, TokenService tokens, UserProfileRepository profiles) {
+    private final com.routive.healthhabit.medication.domain.PersonalMedicationRepository medications;
+    public UserAccountService(UserRepository users, UserConsentRepository consents, SocialAccountRepository socials, TokenService tokens, UserProfileRepository profiles,
+            com.routive.healthhabit.medication.domain.PersonalMedicationRepository medications) {
         this.users=users; this.consents=consents; this.socials=socials; this.tokens=tokens;
         this.profiles=profiles;
+        this.medications=medications;
     }
     public void withdraw(UUID userId) {
         User user = users.findLockedById(userId).filter(u -> "ACTIVE".equals(u.getStatus()))
@@ -17,6 +20,7 @@ public class UserAccountService {
         Instant now = Instant.now(); tokens.revokeAll(userId, now);
         consents.findAllByUserIdOrderByConsentedAtDesc(userId).forEach(c -> c.withdraw(now));
         profiles.findById(userId).ifPresent(profiles::delete);
+        medications.deleteAllByUserId(userId);
         socials.deleteAllByUserId(userId); user.withdraw(now);
     }
 }

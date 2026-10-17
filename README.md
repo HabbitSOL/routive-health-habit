@@ -13,7 +13,7 @@
 | health_habit_*.md, *.sql, *.dbml, *.json | 전체 DB 설계와 데이터 사전 |
 | CODEX_HANDOFF.md | 개발 인수인계 |
 
-전체 DB 설계는 59개 테이블이며 현재 백엔드의 실행용 Flyway V1~V7 스키마는 12개 테이블입니다.
+전체 DB 설계는 59개 테이블이며 개인 복약 1차 구현의 실행용 Flyway V1~V8 스키마는 13개 테이블입니다.
 실행·검증한 범위는 [개발 기록](backend/DEVELOPMENT_LOG.md)을 기준으로 확인합니다.
 
 ## 시작하기

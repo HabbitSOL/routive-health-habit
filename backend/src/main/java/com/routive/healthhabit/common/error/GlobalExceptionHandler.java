@@ -52,6 +52,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             org.springframework.web.bind.MissingServletRequestParameterException.class,
+            org.springframework.web.bind.MissingRequestHeaderException.class,
             org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class
     })
     public ResponseEntity<ErrorResponse> handleInvalidParameter(Exception exception) {

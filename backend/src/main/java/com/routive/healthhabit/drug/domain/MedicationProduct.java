@@ -136,6 +136,8 @@ public class MedicationProduct {
         return id;
     }
 
+    public boolean isActive() { return active; }
+
     public String getKind() {
         return kind;
     }
