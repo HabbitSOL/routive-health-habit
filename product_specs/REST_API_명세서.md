@@ -674,6 +674,10 @@ Idempotency-Key: {uuid}
 
 ### 6.15 오늘의 복약 회차
 
+> 2026-10-17 고정시간 일정·하루 회차 생성/조회 1차 구현: backend/MEDICATION_SCHEDULE_API.md 참고.
+> GET은 저장된 회차만 조회합니다. 별도 POST /medications/{id}/occurrences?date= 로 생성해야 합니다.
+> 아래 식후 예시와 실제 복약 행동은 후속 목표이며 현재 mealRelation=NONE, SCHEDULED/CANCELLED만 지원합니다.
+
 ```http
 GET /api/v1/medication-occurrences?date=2026-10-14
 ```

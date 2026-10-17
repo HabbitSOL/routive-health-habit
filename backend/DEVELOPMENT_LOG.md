@@ -1,6 +1,26 @@
 # 백엔드 개발 현황 및 테스트 기록
 
+## 2026-10-17 · 고정시간 복약 일정·예정 회차
+
+- feat/backend/medication-schedules, 개인 복약 PR #5 위의 후속 구현입니다. #5는 시작 시 OPEN이므로 다음 PR은 develop 대상 초안으로 의존성을 표시합니다.
+- 별도 일정 추가/이력 API, 요일·HH:mm·용량/단위·시간대 검증, 날짜별 명시적 회차 생성·읽기 전용 조회를 구현했습니다.
+- 일정 변경은 내일 이후·마지막 유효시작일 이후 버전만 추가. 과거 정의 보존·미래 회차 취소·스냅샷·동일 날짜/슬롯 재생성 방지.
+- 중지/종료 시 미래 회차 취소, 일정 존재 시 기본정보 기간 변경 거절. 탈퇴 시 회차·일정 하위행·일정·개인 항목을 정리합니다.
+- V9 4개 테이블: medication_schedules, medication_schedule_days, medication_schedule_times, medication_occurrences. 실행용 V1~V9·17개 테이블.
+- 새 통합 테스트 10개 및 시각 변환/DST 누락·중복 거절 단위 테스트 3개 추가.
+- Windows·Java 21.0.12.1, mvnw.cmd --batch-mode test: 2026-10-17 21:59:41 KST H2 전체 119개 통과(실패/오류/건너뜀 0).
+- scripts/Test-MariaDb.ps1: 22:00:54 KST 실제 MariaDB 11.4.8 전체 119개 통과(실패/오류/건너뜀 0). V1~V9·JPA validate 성공. 격리 서버 종료.
+- 최초 일정 통합 10개 테스트도 21:58:31 통과했으며, 위 119개가 DST 보완 후 최종 전체 실행입니다. 원격 CI·앱 E2E·동시 경쟁 실측은 별도.
+- 자동 회차 생성·식사 기반 계산·실제 복용·재고·알림은 미구현입니다. 조회만으로 회차를 생성하지 않으며 POST로 오늘~90일 후 날짜를 명시해야 합니다.
+- MEDICATION_SCHEDULE_API.md에 단계별 연결·버전·취소·시간대·입력 범위와 한계를 작성했습니다. 전체 복약 완성이 아니므로 참고 진행률 6/12(50%) 유지.
+- 기존 .github/workflows/backend-ci.yml 로컬 재시도 변경은 보존하고 이번 기능 커밋에서 제외합니다. 문서·노션은 PR 생성 후 링크를 누적합니다.
+
 ## 2026-10-17 · 개인 복약 기본정보 1차 구현
+
+- PR #5 생성: https://github.com/HabbitSOL/routive-health-habit/pull/5 — develop 대상, 병합 없음. 기능 커밋 7b5fd94. 생성 후 mergeable 확인, 원격 CI 진행 중.
+- 이후 원격 PR·Push CI의 H2/MariaDB 모두 성공 확인: https://github.com/HabbitSOL/routive-health-habit/actions/runs/39033144161 및 https://github.com/HabbitSOL/routive-health-habit/actions/runs/39033138679 . 위 진행 중 문구는 생성 직후 이력입니다.
+- 노션 PR별 문서 작성·허브 갱신: https://app.notion.com/p/3fc9280f6a7b810a8e73d25840be949c
+- 기본정보 관리 구현 확인으로 참고 진행률 6/12=50%. 배포·앱 E2E·전체 복약 완료율이 아닙니다.
 
 - 브랜치 feat/backend/personal-medications. 기존 CI 재시도 로컬 변경을 보존하고 기능 커밋에서는 제외합니다.
 - 등록·목록·상세·부분 수정·중지·종료 API 구현. 요청키 UUID·본문 해시·사용자 잠금으로 재전송을 방지하고 본문 충돌은 409입니다.
