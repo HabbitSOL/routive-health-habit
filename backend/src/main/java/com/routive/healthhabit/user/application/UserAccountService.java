@@ -8,11 +8,16 @@ public class UserAccountService {
     private final SocialAccountRepository socials; private final TokenService tokens;
     private final UserProfileRepository profiles;
     private final com.routive.healthhabit.medication.domain.PersonalMedicationRepository medications;
+    private final com.routive.healthhabit.medication.domain.FixedMedicationScheduleRepository schedules;
+    private final com.routive.healthhabit.medication.domain.MedicationOccurrenceRepository occurrences;
     public UserAccountService(UserRepository users, UserConsentRepository consents, SocialAccountRepository socials, TokenService tokens, UserProfileRepository profiles,
-            com.routive.healthhabit.medication.domain.PersonalMedicationRepository medications) {
+            com.routive.healthhabit.medication.domain.PersonalMedicationRepository medications,
+            com.routive.healthhabit.medication.domain.FixedMedicationScheduleRepository schedules,
+            com.routive.healthhabit.medication.domain.MedicationOccurrenceRepository occurrences) {
         this.users=users; this.consents=consents; this.socials=socials; this.tokens=tokens;
         this.profiles=profiles;
         this.medications=medications;
+        this.schedules=schedules;this.occurrences=occurrences;
     }
     public void withdraw(UUID userId) {
         User user = users.findLockedById(userId).filter(u -> "ACTIVE".equals(u.getStatus()))
@@ -20,6 +25,10 @@ public class UserAccountService {
         Instant now = Instant.now(); tokens.revokeAll(userId, now);
         consents.findAllByUserIdOrderByConsentedAtDesc(userId).forEach(c -> c.withdraw(now));
         profiles.findById(userId).ifPresent(profiles::delete);
+        occurrences.deleteAllByUserId(userId);occurrences.flush();
+        medications.findAllByUserId(userId).forEach(m ->
+            schedules.deleteAll(schedules.findAllByMedicationIdOrderByEffectiveFromAsc(m.getId())));
+        schedules.flush();
         medications.deleteAllByUserId(userId);
         socials.deleteAllByUserId(userId); user.withdraw(now);
     }

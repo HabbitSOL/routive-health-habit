@@ -20,9 +20,13 @@ public class PersonalMedicationService {
     private final UserRepository users;
     private final UserConsentRepository consents;
     private final MedicationProductRepository products;
+    private final FixedMedicationScheduleRepository schedules;
+    private final MedicationOccurrenceRepository occurrences;
     public PersonalMedicationService(PersonalMedicationRepository m, UserRepository u,
-            UserConsentRepository c, MedicationProductRepository p) {
+            UserConsentRepository c, MedicationProductRepository p,
+            FixedMedicationScheduleRepository s, MedicationOccurrenceRepository o) {
         medications=m; users=u; consents=c; products=p;
+        schedules=s;occurrences=o;
     }
     private void authorize(UUID user, boolean write) {
         var u=(write?users.findLockedById(user):users.findById(user))
@@ -33,6 +37,10 @@ public class PersonalMedicationService {
             .filter(c->c.getWithdrawnAt()==null).forEach(c->active.add(c.getConsentType()));
         if(!active.containsAll(Set.of("TERMS_OF_SERVICE","PRIVACY","SENSITIVE_HEALTH_DATA")))
             throw new BusinessException(ErrorCode.REQUIRED_CONSENT_MISSING);
+    }
+    public void authorizeRecords(UUID user,boolean write){authorize(user,write);}
+    public PersonalMedication requireOwned(UUID user,UUID id,boolean write){
+        authorize(user,write);return owned(user,id);
     }
     public MedicationResponse create(UUID user, UUID key, MedicationWriteRequest r) {
         authorize(user,true); noSchedule(r);
@@ -80,6 +88,8 @@ public class PersonalMedicationService {
         if(r.version()==null||!r.version().equals(m.getVersion())) conflict();
         if(r.drugId()!=null||r.medicationType()!=null) invalid();
         Set<String> clear=r.clearFields()==null?Set.of():r.clearFields();
+        if(schedules.existsByMedicationId(id)&&(r.startDate()!=null||r.endDate()!=null||clear.contains("endDate")))
+            conflict();
         if((clear.contains("purpose")&&r.purpose()!=null)||(clear.contains("endDate")&&r.endDate()!=null)
             ||(clear.contains("memo")&&r.memo()!=null)) invalid();
         String custom=r.customName()==null?m.getCustomName():clean(r.customName());
@@ -95,7 +105,10 @@ public class PersonalMedicationService {
         authorize(user,true); var m=owned(user,id);
         if(m.getStatus().equals(target)) return MedicationResponse.from(m);
         if(!m.getStatus().equals("ACTIVE")) conflict();
-        m.close(target); medications.flush();return MedicationResponse.from(m);
+        m.close(target);
+        occurrences.findAllByMedicationIdAndScheduledAtGreaterThanEqual(id,java.time.Instant.now())
+            .forEach(MedicationOccurrence::cancel);
+        medications.flush();return MedicationResponse.from(m);
     }
     private PersonalMedication owned(UUID user,UUID id) {
         return medications.findByIdAndUserId(id,user)

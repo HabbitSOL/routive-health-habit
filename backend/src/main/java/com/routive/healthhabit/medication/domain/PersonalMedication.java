@@ -40,6 +40,7 @@ public class PersonalMedication {
         this.purpose=purpose; startDate=start; endDate=end; this.memo=memo; updatedAt=Instant.now();
     }
     public void close(String target) {status=target; closedAt=Instant.now(); updatedAt=closedAt;}
+    public void touch() {updatedAt=Instant.now();}
     public UUID getId(){return id;} public UUID getDrugId(){return drugId;}
     public String getDisplayName(){return displayName;} public String getCustomName(){return customName;}
     public String getMedicationType(){return medicationType;} public String getPurpose(){return purpose;}

@@ -4,6 +4,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 public interface PersonalMedicationRepository extends JpaRepository<PersonalMedication,UUID> {
     void deleteAllByUserId(UUID userId);
+    java.util.List<PersonalMedication> findAllByUserId(UUID userId);
     Optional<PersonalMedication> findByIdAndUserId(UUID id,UUID userId);
     Optional<PersonalMedication> findByUserIdAndRequestKey(UUID userId,String requestKey);
     Page<PersonalMedication> findAllByUserId(UUID userId,Pageable pageable);
