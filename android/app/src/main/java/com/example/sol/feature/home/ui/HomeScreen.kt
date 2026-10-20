@@ -92,25 +92,25 @@ fun HomeScreen(state: HomeUiState, mode: DemoMode, nickname: String?, onOpen: (S
                 }
             }
         }
-        SolCard("최근 식사", outlined = true) {
+        HomeDetailCard("최근 식사", "NOURISH YOUR DAY · 식사", "meal", Peach,
+            "식사 기록 살펴보기", { onOpen("meal") }) {
             SectionContent(state.meal, "아직 기록한 식사가 없어요", "오늘 먹은 식사부터 남겨보세요.",
                 { onRetry(HomeSection.MEAL) }) { value ->
                 InfoBadge(value.timeLabel, Peach)
                 Text(value.title, style = MaterialTheme.typography.titleMedium)
                 Text(value.description, style = MaterialTheme.typography.bodyMedium)
             }
-            TextButton(onClick = { onOpen("meal") }) { Text("식사 화면으로 →") }
         }
-        SolCard("다음 복약 일정", outlined = true) {
+        HomeDetailCard("다음 복약 일정", "A LITTLE CARE · 복약", "medication", Lavender,
+            "복약 일정 살펴보기", { onOpen("medication") }) {
             SectionContent(state.medication, "등록한 복약 일정이 없어요", "복약 화면에서 일정을 확인할 수 있어요.",
                 { onRetry(HomeSection.MEDICATION) }) { value ->
                 InfoBadge(value.scheduledLabel, Lavender)
                 Text(value.title, style = MaterialTheme.typography.titleMedium)
                 Text(value.description, style = MaterialTheme.typography.bodyMedium)
             }
-            TextButton(onClick = { onOpen("medication") }) { Text("복약 화면으로 →") }
         }
-        TextButton(onClick = { onOpen("drugdictionary") }) { Text("의약품 사전 둘러보기 →") }
+        com.example.sol.feature.drugdictionary.ui.DrugDiscoveryCard { onOpen("drugdictionary") }
         if (showAd) AdPreview()
         TextButton(onClick = { toolsExpanded = !toolsExpanded }) { Text(if (toolsExpanded) "데모 도구 닫기 −" else "데모 도구 +") }
         if (toolsExpanded) SolCard("화면 상태 체험") {
@@ -150,9 +150,15 @@ private fun <T> ColumnScope.SectionContent(state: SectionState<T>, emptyTitle: S
             Text(emptyHint, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         SectionState.Error -> {
-            Text("이 정보를 불러오지 못했어요", color = MaterialTheme.colorScheme.error)
-            Text("다른 카드는 계속 이용할 수 있어요.", style = MaterialTheme.typography.bodySmall)
-            OutlinedButton(onClick = onRetry) { Text("이 항목만 다시 시도") }
+            Surface(shape = RoundedCornerShape(18.dp),
+                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = .35f)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("잠시 연결을 쉬고 있어요", style = MaterialTheme.typography.titleMedium)
+                    Text("정보를 불러오지 못했어요.\n다른 카드는 계속 이용할 수 있어요.",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedButton(onClick = onRetry, shape = RoundedCornerShape(12.dp)) { Text("↻  이 항목만 다시 시도") }
+                }
+            }
         }
         is SectionState.Ready -> ready(state.value)
     }
@@ -182,3 +188,4 @@ private fun WeekStrip(today: LocalDate) {
         }
     }
 }
+
