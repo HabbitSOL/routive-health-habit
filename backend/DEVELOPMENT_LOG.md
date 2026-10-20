@@ -355,3 +355,48 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 - 다음: 성준 API/응답 계약 연결, 실제 기기 확인. 3.2 프론트엔드 데모 구현 완료 · 서버 연동 대기.
 - 근거: android/HOME_HANDOFF.md, android/app/src/test/java/com/example/sol/feature/home/HomeViewModelTest.kt.
 - Notion 동기화 대기: 지정 개발 기록 페이지 3f99280f6a7b817886c2e04f119a149c 재조회가 NOT_FOUND. 접근 가능한 창업 페이지와 별개 권한 문제.
+
+## 2026-10-16 · Android 홈 카드 디자인 보완
+
+- 최근 식사/복약 카드에 파스텔 헤더와 자체 Canvas 그림, 오류 안내 영역, 사전 탐색 카드 적용.
+- API/DB/백엔드 기능 변경 없음. 원본 android와 PR 작업 폴더에 반영, 원격 게시 대기.
+- 기기 시각 확인 및 이번 디자인 변경의 테스트/CI 재실행은 미실행.
+- 근거: android/app/src/main/java/com/example/sol/feature/home/ui/HomeDetailCard.kt 및 HomeScreen.kt.
+- 기존 Notion 지정 개발 기록 페이지 접근 불가로 동기화 대기 유지.
+
+- 검증: 원본 Android Studio 프로젝트에서 JBR 21.0.11로 :app:assembleDebug --offline 성공 (26초).
+
+## 2026-10-20 — Android 2주차 의약품 검색 Mock
+- 기준: 현서 프론트엔드 2주차 및 3.5. 로그인/가입/동의 재사용, 3.3은 4주차, API·토큰은 최종 단계로 이관.
+- 검색/상세 화면, 최근 검색어, 350ms debounce, 이전 요청 취소+세대 확인, 더 보기, 개별 로딩/빈 결과/오류/재시도 구현.
+- 가상 제품만 제공. 효능/용법/성분/갱신일을 임의 생성하지 않고 미제공 정보 표시. 개인 복약 등록은 후속 연결 안내.
+- API·DB 변경 없음. 로컬 DrugSearchItem/DrugDetailResponse/PageResponse 필드명을 참고한 Android 모델만 추가. 실제 HTTP 연결은 미구현.
+- 원본 Android Studio 프로젝트와 PR checkout에 동일 기능 파일 반영. 기존 홈 카드 디자인 미커밋 변경 보존.
+- 검증: JBR 21.0.11, Windows 원본 android 경로에서 `gradlew.bat -p android :app:assembleDebug --offline` 성공 (51s). Gradle 캐시 접근 권한 때문에 승인된 실행 환경 사용.
+- 단위 테스트 추가/실행, 실제 기기/에뮬레이터 UI 확인, 원격 Android CI는 이번 작업에서 수행하지 않음. 과거 홈 CI 결과와 구분.
+- 근거: android/DRUG_DICTIONARY_HANDOFF.md, feature/drugdictionary/, MainActivity.kt.
+- 지정 Notion 기록 3f99280f6a7b817886c2e04f119a149c fetch는 NOT_FOUND. 동기화 대기.
+- 다음: 사용자 화면 확인, 최신 develop/기존 PR 상태 확인 후 PR 전달, 최종 단계에서 실제 서버 연동.
+
+## 2026-10-20 — 사용자 피드백: 의약품 사전 디자인·문구
+- 홈 사전 진입 카드 확대 및 검색 CTA 강조, 청록→블루 그라데이션과 원형 장식. 검색 히어로 동일 스타일 적용, 흰색 전체 배경 유지.
+- 사용법은 유지하고 용법·용량 설명 추가. 상호작용은 '함께 사용할 때 주의할 점'으로 표시하고 정의·미제공 정보 안내 추가.
+- 공식 근거: https://www.fda.gov/drugs/resources-drugs/drug-interactions-what-you-should-know / https://nedrug.mfds.go.kr/searchDrug
+- API·DB·인증·의료 판단 로직 변경 없음.
+- JBR21, Windows 원본 Android 프로젝트: :app:assembleDebug --offline 성공 (17s). 기기 UI/단위 테스트/CI는 이번 수정에서 미실행.
+- 원본과 PR checkout에 반영. 이번 디자인은 원격 미게시.
+- 지정 Notion 개발 기록 fetch NOT_FOUND 재확인, 동기화 대기.
+
+## 2026-10-20 — 의약품 상세 헤더 디자인 후속 수정
+- 사용자 캡처의 단색 민트 제품 헤더를 공통 청록→블루 그라데이션으로 변경.
+- 제형 배지, 별도 아이콘 프레임, 굵은 제품명, 업체 라벨, 하단 가상 예시 안내로 정보 위계 정돈.
+- 이름·업체명은 줄 수 제한 없이 표시하며 기능/API/DB 변경 없음.
+- 원본 및 PR checkout 반영. 이번 후속 수정은 빌드·테스트·기기 확인 미실행. 이전 17s 빌드 성공은 이 수정 이전 결과.
+- Notion 지정 개발 기록은 직전 조회 NOT_FOUND, 동기화 대기 유지.
+
+## 2026-10-20 — 2주차 마무리
+- 사용자 제공 실행 캡처로 최신 상세 헤더 표시 확인, 사용자 디자인 승인 완료.
+- 2주차는 합의한 프론트엔드 Mock 범위 완료. 실제 API·토큰·서버 저장은 최종 연동 단계 대기, 3.3 습관은 4주차.
+- 검색→상세, 최근 검색어, 더 보기, 상태 처리와 디자인을 전달 대상으로 정리.
+- 사용자 확인은 상세 화면/디자인 승인 근거이며 모든 오류·접근성·기기 회귀 테스트 통과를 의미하지 않음.
+- 기존 PR #4 병합 확인 후 최신 develop 기반으로 이번 변경을 정리한다. 지정 Notion 개발 기록은 NOT_FOUND로 동기화 대기.

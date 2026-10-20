@@ -28,16 +28,20 @@ fun DrugSearchScreen(model: DrugDictionaryViewModel, onBack: () -> Unit, onOpen:
         contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item { DrugHeader("의약품 사전", onBack) }
         item {
-            Surface(color = DrugMint, shape = RoundedCornerShape(28.dp)) {
-                Row(Modifier.fillMaxWidth().padding(22.dp), verticalAlignment = Alignment.CenterVertically,
+            DrugGradientBanner {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("KNOW YOUR MEDICINE", color = DrugInk, style = MaterialTheme.typography.labelSmall)
-                        Text("궁금한 약 정보를\n차근차근 살펴봐요", color = DrugInk, style = MaterialTheme.typography.titleLarge)
-                        Text("이름과 업체명으로 검색해 보세요", color = DrugInk, style = MaterialTheme.typography.bodySmall)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("MEDICINE LIBRARY", color = androidx.compose.ui.graphics.Color(0xFFC1EAD9),
+                            style = MaterialTheme.typography.labelSmall)
+                        Text("궁금한 약 정보를\n차근차근 살펴봐요", color = androidx.compose.ui.graphics.Color.White,
+                            style = MaterialTheme.typography.titleLarge)
                     }
                     DrugArtwork()
                 }
+                HorizontalDivider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = .2f))
+                Text("이름으로 검색하고 · 상세 정보를 확인해요", color = androidx.compose.ui.graphics.Color.White,
+                    style = MaterialTheme.typography.bodySmall)
             }
         }
         item {
@@ -117,3 +121,4 @@ fun DrugSearchScreen(model: DrugDictionaryViewModel, onBack: () -> Unit, onOpen:
         }
     }
 }
+
