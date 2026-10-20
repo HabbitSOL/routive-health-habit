@@ -28,6 +28,9 @@ import com.example.sol.feature.auth.viewmodel.LoginViewModel
 import com.example.sol.feature.home.ui.HomeScreen
 import com.example.sol.feature.home.viewmodel.HomeViewModel
 import com.example.sol.feature.habit.ui.HabitScreen
+import com.example.sol.feature.drugdictionary.ui.DrugSearchScreen
+import com.example.sol.feature.drugdictionary.ui.DrugDetailScreen
+import com.example.sol.feature.drugdictionary.viewmodel.DrugDictionaryViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +41,7 @@ class MainActivity : ComponentActivity() {
 }
 
 private val destinations = linkedMapOf(
-    "meal" to "식사", "drugdictionary" to "의약품 사전",
+    "meal" to "식사",
     "medication" to "복약", "statistics" to "통계",
 )
 
@@ -49,14 +52,16 @@ fun SolApp() {
     val signup: SignupViewModel = viewModel()
     val profile: ProfileViewModel = viewModel()
     val home: HomeViewModel = viewModel()
+    val drugs: DrugDictionaryViewModel = viewModel()
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route ?: "login"
-    val showBottom = route !in listOf("login", "signup", "profile-onboarding", "profile-edit")
+    val showBottom = route !in listOf("login", "signup", "profile-onboarding", "profile-edit", "drug-detail/{drugId}")
     val exitDemo: () -> Unit = {
         account.clear()
         signup.reset()
         profile.load(null)
         home.reset()
+        drugs.reset()
         nav.navigate("login") { popUpTo(nav.graph.id) { inclusive = true }; launchSingleTop = true }
     }
     // Process recreation does not restore a fake authenticated session.
@@ -99,6 +104,17 @@ fun SolApp() {
                     onOpen = { nav.navigate(it) { launchSingleTop = true } },
                     onReload = home::reload, onRetry = home::retry, onMode = home::selectMode,
                     onExit = exitDemo)
+            }
+            composable("drugdictionary") {
+                DrugSearchScreen(drugs, onBack = { nav.popBackStack() }, onOpen = { id ->
+                    nav.navigate("drug-detail/$id") { launchSingleTop = true }
+                })
+            }
+            composable("drug-detail/{drugId}") { detailEntry ->
+                val id = detailEntry.arguments?.getString("drugId")
+                LaunchedEffect(id) { if (id != null) drugs.open(id) }
+                androidx.compose.runtime.DisposableEffect(Unit) { onDispose { drugs.closeDetail() } }
+                DrugDetailScreen(drugs, onBack = { nav.popBackStack() })
             }
             composable("habit") {
                 HabitScreen(completed = home.completedHabits, onToggle = home::toggleHabit,
