@@ -17,8 +17,11 @@
 
 ## 현재 구현 범위
 
+- 식사 직접 입력·조회·취소·6개 영양 합계: [MEAL_RECORD_API.md](MEAL_RECORD_API.md). 미상 값과 0을 구분합니다. 음식 사전·사진·식후 복약 재계산은 후속입니다.
+- 식사 V11은 복약 PR #10의 V10 이후 적용해야 하며 식사 PR은 선행 조건 충족·통합 검증 전까지 초안으로 유지합니다.
+
 - 고정시간 복약 일정·하루 회차 생성/조회: [MEDICATION_SCHEDULE_API.md](MEDICATION_SCHEDULE_API.md).
-- V9·17개 실행용 테이블. 자동 생성·식사 연동·실제 복용 행동·알림은 후속입니다.
+- develop의 복약 기반은 V9·17개 테이블이며 이 브랜치의 식사 V11을 더한 독립 검증은 총 19개입니다. 복약 행동/자동 생성은 PR #10, 식사 연동·알림은 후속입니다.
 
 - 개인 복약 등록·목록·상세·부분 수정·중지·종료: [PERSONAL_MEDICATION_API.md](PERSONAL_MEDICATION_API.md).
 - 개인 복약 기본정보 API의 schedule 필드는 여전히 미지원이며 별도 일정 API를 사용합니다.

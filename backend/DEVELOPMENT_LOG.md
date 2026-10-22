@@ -1,5 +1,18 @@
 # 백엔드 개발 현황 및 테스트 기록
 
+## 2026-10-22 · 식사 기록·영양 합계 1차
+
+- `feat/backend/meal-records-nutrition`, develop `2e79df7` 기준 별도 작업 디렉터리. 기존 보안/CI/복약 PR 및 원본 작업 트리 보존. POST/GET /meals, GET /meals/{id}, DELETE /meals/{id}?version=, GET /statistics/meals 구현.
+- 완료 식사 직접 입력, 아침/점심/저녁/간식/야식, 실제 식사/서버 기록 시각 분리, 사용자 시간대/달력 날짜 스냅샷. 섭취량 전체 기준의 6개 영양값 저장, 미상(null)과 0 구분, 확정 총합/확인 소계/미상 항목 수 제공. 수량 재곱셈·의학적 판단 없음.
+- UUID 요청키·정규화 본문 해시·사용자 잠금으로 생성 재전송/동시 충돌 보호. 상태/수정 버전 취소 및 원본 보존, 취소 데이터 통계 제외. 조회 페이지/기간 상한, 입력 크기/수량/시간 검증. 사진 키/foodId는 null 또는 생략만 허용.
+- HealthRecordAccessService로 기존 활성 계정·필수 동의 검사를 공통화하고 복약 공개 서비스 계약 유지. 탈퇴 시 식사 음식 항목→식사 순 bulk 삭제. 통계의 합계/식사 수는 REPEATABLE_READ 트랜잭션에서 조회.
+- V11 meals/meal_items 추가. 현재 독립 브랜치의 마이그레이션은 V1~V9+V11, 실행용 19개 테이블. V10은 PR #10에 예약. **PR #10 선행 병합 전까지 초안 유지**, 최신 develop 반영 시 UserAccountService/오류 코드 등 충돌을 해결해 복약/식사 삭제를 모두 보존하고 V1~V11·20개 테이블 통합 재검증 필요. V11 적용 후 V10을 뒤늦게 적용하는 배포 순서를 허용하지 않음.
+- Windows·Java 21.0.12.1·가짜 데이터. 프로덕션 소스 컴파일 성공. 최초 테스트 컴파일은 테스트 보조 메서드 get 이름 충돌로 실패해 getMeal로 수정. 15:27:04 KST H2 141개 중 탈퇴 테스트 1개가 JPA 1차 캐시의 삭제 전 객체를 읽어 실패. DB 검증 전 flush/clear 및 미상 영양값 실제 재조회 검증을 보강하고, 기간 조회 날짜 상한을 추가함.
+- 최종 `mvnw.cmd --batch-mode -o test`: **15:28:52 KST H2 141개 통과**, 실패/오류/건너뜀 0. `scripts/Test-MariaDb.ps1`(공용 MariaDbHome/JavaHome 지정) → `mvnw.cmd test -Dspring.profiles.active=mariadb-test`: **15:31:02 KST 격리 MariaDB 11.4.8 141개 통과**, 실패/오류/건너뜀 0. V1~V9+V11·JPA validate 성공, 서버 종료.
+- 신규 22개 통합 테스트: 시각/섭취량, 6개 소수 합계, 미상/0/소계, 멱등성 정규화/충돌, 취소/버전/재생성 방지, 인증/다른 사용자/동의 철회, 입력/페이지/기간 상한, 음식/이미지 미지원, 탈퇴 시 다른 사용자 보존, 동일/다른 본문 동시 요청. 기존 인증·사전·복약 119개 회귀 포함. 소규모 2요청 경쟁이며 부하 검증 아님.
+- 외부 공급자는 모의 객체, SMTP는 루프백. 실제 외부 음식 데이터/메일 수신함/소셜 계정·Android E2E·PR #8/#10과 통합·운영 배포는 미검증. 식사 일정/건너뜀·수정 이력·음식 사전·사진·식후 복약 재계산·목표는 후속. 신규 의존성 추가 없음.
+- 근거: MEAL_RECORD_API.md, API 명세, V11, MealController/Service/Meal/MealItem/Repository/NutritionSummary, HealthRecordAccessService, MealIntegrationTest. 커밋/Push 후 develop 초안 PR·기존 노션 허브의 PR별 문서로 연결 예정.
+
 ## 2026-10-17 · 고정시간 복약 일정·예정 회차
 
 - feat/backend/medication-schedules, 개인 복약 PR #5 위의 후속 구현입니다. #5는 시작 시 OPEN이므로 다음 PR은 develop 대상 초안으로 의존성을 표시합니다.

@@ -212,6 +212,8 @@ GET /users/me에 profile 객체가 추가되며 PATCH 응답은 프로필 객체
 
 ### 식사·음식
 
+> 2026-10-22 1차: 식사 POST/GET/DELETE와 GET /statistics/meals 구현. PATCH·음식 사전·사진 업로드는 후속이며 backend/MEAL_RECORD_API.md가 현재 요청/응답 기준이다.
+
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/meals?from=&to=` | 기간별 식사 목록 |
@@ -502,6 +504,9 @@ Idempotency-Key: {uuid}
 응답은 서버가 확정한 최신 회차 상태와 다음 알림 예정 시각을 포함한다.
 
 ### 6.11 식사 생성
+
+> 2026-10-22 1차 구현 범위와 실제 계약은 backend/MEAL_RECORD_API.md를 따른다. 완료 식사 직접 입력·6개 영양 스냅샷·조회·취소·기간 합계가 대상이다.
+> 영양값은 입력한 섭취량 전체 기준이며 미상(null)과 0을 구분한다. 아래 식후 복약 재계산·사진·음식 사전 연결 예시는 후속 목표로, 현재 구현에 포함하지 않는다.
 
 ```http
 POST /api/v1/meals
