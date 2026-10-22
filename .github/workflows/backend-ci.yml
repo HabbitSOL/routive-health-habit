@@ -25,6 +25,21 @@ jobs:
       run:
         working-directory: backend
     steps:
+      - name: Check network before external actions
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            echo "Network check ${attempt}/4"
+            if curl --fail --silent --show-error --location --connect-timeout 5 --max-time 15 --output /dev/null https://github.com &&
+               curl --fail --silent --show-error --location --connect-timeout 5 --max-time 15 --output /dev/null https://repo.maven.apache.org/maven2/; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 4 ]; then sleep 10; fi
+          done
+          echo "::error::Runner network check failed; checkout and tests have not started."
+          exit 1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
@@ -32,6 +47,21 @@ jobs:
           java-version: '21'
           cache: maven
           cache-dependency-path: backend/pom.xml
+      - name: Prepare Maven (bounded download retries)
+        shell: bash
+        env:
+          MVNW_VERBOSE: 'true'
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            echo "Maven preparation ${attempt}/3"
+            if timeout 120s bash mvnw --batch-mode --version; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then sleep 10; fi
+          done
+          echo "::error::Maven preparation failed; tests have not started."
+          exit 1
       - name: Test with H2
         run: bash mvnw --batch-mode test
 
@@ -59,6 +89,21 @@ jobs:
       TEST_DB_URL: jdbc:mariadb://127.0.0.1:3306/health_habit_test
       TEST_DB_PASSWORD: ci-test-only
     steps:
+      - name: Check network before external actions
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            echo "Network check ${attempt}/4"
+            if curl --fail --silent --show-error --location --connect-timeout 5 --max-time 15 --output /dev/null https://github.com &&
+               curl --fail --silent --show-error --location --connect-timeout 5 --max-time 15 --output /dev/null https://repo.maven.apache.org/maven2/; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 4 ]; then sleep 10; fi
+          done
+          echo "::error::Runner network check failed; checkout and tests have not started."
+          exit 1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
@@ -66,5 +111,20 @@ jobs:
           java-version: '21'
           cache: maven
           cache-dependency-path: backend/pom.xml
+      - name: Prepare Maven (bounded download retries)
+        shell: bash
+        env:
+          MVNW_VERBOSE: 'true'
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            echo "Maven preparation ${attempt}/3"
+            if timeout 120s bash mvnw --batch-mode --version; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then sleep 10; fi
+          done
+          echo "::error::Maven preparation failed; tests have not started."
+          exit 1
       - name: Test migrations and APIs with MariaDB
         run: bash mvnw --batch-mode test -Dspring.profiles.active=mariadb-test
