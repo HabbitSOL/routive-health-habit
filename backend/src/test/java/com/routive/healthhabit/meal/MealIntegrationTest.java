@@ -10,6 +10,9 @@ import com.routive.healthhabit.common.error.*;
 import com.routive.healthhabit.meal.api.MealWriteRequest;
 import com.routive.healthhabit.meal.application.MealService;
 import com.routive.healthhabit.meal.domain.*;
+import com.routive.healthhabit.medication.domain.*;
+import com.routive.healthhabit.medication.api.MedicationActionRequest;
+import com.routive.healthhabit.medication.application.MedicationActionService;
 import com.routive.healthhabit.user.application.UserAccountService;
 import com.routive.healthhabit.user.domain.*;
 import java.time.*;
@@ -36,6 +39,11 @@ class MealIntegrationTest {
     @Autowired MealItemRepository items;
     @Autowired MealService service;
     @Autowired UserAccountService accounts;
+    @Autowired PersonalMedicationRepository medications;
+    @Autowired FixedMedicationScheduleRepository schedules;
+    @Autowired MedicationOccurrenceRepository occurrences;
+    @Autowired MedicationActionRepository actions;
+    @Autowired MedicationActionService medicationActions;
     @Autowired ObjectMapper mapper;
     @jakarta.persistence.PersistenceContext jakarta.persistence.EntityManager entityManager;
     @MockitoBean AccountMailSender mail;
@@ -260,6 +268,50 @@ class MealIntegrationTest {
         entityManager.flush();entityManager.clear();
         assertEquals(1,meals.count());assertEquals(1,items.count());assertTrue(meals.findById(UUID.fromString(id)).isEmpty());
         assertTrue(meals.findById(UUID.fromString(retained)).isPresent());getMeal(id).andExpect(status().isUnauthorized());
+    }
+
+    @Test void withdrawalDeletesMealsAndMedicationActionsTogetherAndPreservesOtherUser()throws Exception {
+        String cancelled=createId();cancel(cancelled,"0").andExpect(status().isOk());
+        String completed=createId();
+        var mine=medicationFixture(user);
+        var other=newUser();String originalToken=token;
+        token=tokens.issue(other,Instant.now()).accessToken();String retained=createId();
+        var theirs=medicationFixture(other);token=originalToken;
+        String myItem=JsonPath.read(getMeal(completed).andReturn().getResponse().getContentAsString(),"$.data.items[0].itemId");
+
+        mvc.perform(delete("/api/v1/users/me").header("Authorization","Bearer "+token)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"confirmation\":\"DELETE\"}"))
+                .andExpect(status().isOk());
+        cleanup.remove(user.getId());entityManager.flush();entityManager.clear();
+        assertTrue(meals.findById(UUID.fromString(cancelled)).isEmpty());
+        assertTrue(meals.findById(UUID.fromString(completed)).isEmpty());
+        assertTrue(items.findById(UUID.fromString(myItem)).isEmpty());
+        assertTrue(actions.findById(mine.action()).isEmpty());
+        assertTrue(occurrences.findById(mine.occurrence()).isEmpty());
+        assertTrue(schedules.findById(mine.schedule()).isEmpty());
+        assertTrue(medications.findById(mine.medication()).isEmpty());
+        assertTrue(meals.findById(UUID.fromString(retained)).isPresent());
+        assertEquals(1,items.count());
+        assertTrue(actions.findById(theirs.action()).isPresent());
+        assertTrue(occurrences.findById(theirs.occurrence()).isPresent());
+        assertTrue(schedules.findById(theirs.schedule()).isPresent());
+        assertTrue(medications.findById(theirs.medication()).isPresent());
+        getMeal(completed).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/medication-occurrences/"+mine.occurrence()+"/actions")
+                .header("Authorization","Bearer "+token)).andExpect(status().isUnauthorized());
+    }
+    private record MedicationFixture(UUID medication,UUID schedule,UUID occurrence,UUID action) {}
+    private MedicationFixture medicationFixture(User owner) {
+        var medication=medications.saveAndFlush(new PersonalMedication(owner.getId(),null,"가상 약","가상 약","OTC",
+                null,day,null,null,UUID.randomUUID().toString(),"fixture"));
+        var slot=new FixedMedicationSchedule.Slot(LocalTime.MIDNIGHT,java.math.BigDecimal.ONE,"TABLET");
+        var schedule=schedules.saveAndFlush(new FixedMedicationSchedule(medication.getId(),day,"Asia/Seoul",
+                Set.of(1,2,3,4,5,6,7),List.of(slot)));
+        var occurrence=occurrences.saveAndFlush(new MedicationOccurrence(owner.getId(),medication,schedule,day,0,
+                day.atStartOfDay(ZoneId.of("Asia/Seoul")).toInstant(),slot));
+        var action=medicationActions.record(owner.getId(),occurrence.getId(),UUID.randomUUID(),
+                new MedicationActionRequest("TAKE",eaten,java.math.BigDecimal.ONE,"TABLET",null));
+        return new MedicationFixture(medication.getId(),schedule.getId(),occurrence.getId(),action.actionId());
     }
 
     @Test @Transactional(propagation=Propagation.NOT_SUPPORTED)

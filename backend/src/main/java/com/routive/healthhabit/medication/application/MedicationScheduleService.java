@@ -58,12 +58,25 @@ public class MedicationScheduleService {
     }
     public Map<String,Object> generate(UUID user,UUID medication,LocalDate date){
         var m=access.requireOwned(user,medication,true);
-        if(!m.getStatus().equals("ACTIVE"))conflict();
-        int created=0;
+        var available=schedules.findAllByMedicationIdOrderByEffectiveFromAsc(medication);
+        return generateLocked(user,m,date,available,Instant.now());
+    }
+    // Internal worker entry point: rechecks consent/ownership while holding the same user lock as HTTP writes.
+    public int generateToday(UUID user,UUID medication){
+        var m=access.requireOwned(user,medication,true);
         var available=schedules.findAllByMedicationIdOrderByEffectiveFromAsc(medication);
         if(available.isEmpty())invalid();
+        Instant now=Instant.now();
+        LocalDate date=now.atZone(zone(available.getFirst().getTimezone())).toLocalDate();
+        return (int)generateLocked(user,m,date,available,now).get("created");
+    }
+    private Map<String,Object> generateLocked(UUID user,PersonalMedication m,LocalDate date,
+            List<FixedMedicationSchedule> available,Instant now){
+        if(!m.getStatus().equals("ACTIVE"))conflict();
+        int created=0;
+        if(available.isEmpty())invalid();
         for(var s:available){
-            ZoneId zone=zone(s.getTimezone());LocalDate today=LocalDate.now(zone);
+            ZoneId zone=zone(s.getTimezone());LocalDate today=now.atZone(zone).toLocalDate();
             if(date.isBefore(today)||date.isAfter(today.plusDays(90)))invalid();
             if(!s.covers(date)||date.isBefore(m.getStartDate())||(m.getEndDate()!=null&&date.isAfter(m.getEndDate()))
                 ||!s.getDays().contains(date.getDayOfWeek().getValue()))continue;

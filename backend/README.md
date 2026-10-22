@@ -21,7 +21,9 @@
 - 식사 V11은 복약 PR #10의 V10 이후 적용해야 하며 식사 PR은 선행 조건 충족·통합 검증 전까지 초안으로 유지합니다.
 
 - 고정시간 복약 일정·하루 회차 생성/조회: [MEDICATION_SCHEDULE_API.md](MEDICATION_SCHEDULE_API.md).
-- develop의 복약 기반은 V9·17개 테이블이며 이 브랜치의 식사 V11을 더한 독립 검증은 총 19개입니다. 복약 행동/자동 생성은 PR #10, 식사 연동·알림은 후속입니다.
+- 실제 복약 행동 저장·조회: [MEDICATION_ACTION_API.md](MEDICATION_ACTION_API.md).
+- 오늘 회차 자동 생성: [MEDICATION_GENERATION.md](MEDICATION_GENERATION.md). `MEDICATION_GENERATION_ENABLED=true`로 명시적으로 활성화하며 기본값은 false입니다.
+- 이 작업 브랜치에는 PR #10을 반영하여 V1~V11·20개 실행용 테이블을 포함합니다. develop 병합·배포와는 별개이며 #10 선행 병합 조건은 유지합니다. 식사 연동·기록 정정·재고·알림은 후속입니다.
 
 - 개인 복약 등록·목록·상세·부분 수정·중지·종료: [PERSONAL_MEDICATION_API.md](PERSONAL_MEDICATION_API.md).
 - 개인 복약 기본정보 API의 schedule 필드는 여전히 미지원이며 별도 일정 API를 사용합니다.
@@ -142,7 +144,7 @@ Google은 서명·발급자·대상 클라이언트·만료·발급 시각·사�
 .\scripts\Test-MariaDb.ps1 -MariaDbHome 'C:\tools\mariadb-11.4.8-winx64' -JavaHome 'C:\tools\jdk-21'
 ```
 
-도구가 `.tools/mariadb`, `.tools/java21`에 있으면 인수를 생략할 수 있습니다. 이 스크립트는 로컬 전용 임시 MariaDB를 시작하고 V1~V7 및 JPA 스키마 검증, 전체 테스트를 실행한 후 서버를 종료합니다. 테스트 데이터는 `.tools/db-test-*`에 남습니다. `.tools`는 Git에서 제외됩니다.
+도구가 `.tools/mariadb`, `.tools/java21`에 있으면 인수를 생략할 수 있습니다. 이 스크립트는 로컬 전용 임시 MariaDB를 시작하고 현재 전체 마이그레이션(V1~V10) 및 JPA 스키마 검증, 전체 테스트를 실행한 후 서버를 종료합니다. 테스트 데이터는 `.tools/db-test-*`에 남습니다. `.tools`는 Git에서 제외됩니다.
 
 테스트 구성과 최근 결과는 [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)에 기록합니다. Google은 로컬 RSA 서명, Kakao는 HTTP 모의 응답, SMTP는 실제 루프백 소켓을 사용합니다. 실제 공급자 로그인·외부 수신함 도착·모바일 화면 연동은 별도 검증이 필요합니다.
 
