@@ -212,6 +212,8 @@ GET /users/me에 profile 객체가 추가되며 PATCH 응답은 프로필 객체
 
 ### 식사·음식
 
+> 2026-10-22 1차: 식사 POST/GET/DELETE와 GET /statistics/meals 구현. PATCH·음식 사전·사진 업로드는 후속이며 backend/MEAL_RECORD_API.md가 현재 요청/응답 기준이다.
+
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/meals?from=&to=` | 기간별 식사 목록 |
@@ -503,6 +505,9 @@ Idempotency-Key: {uuid}
 
 ### 6.11 식사 생성
 
+> 2026-10-22 1차 구현 범위와 실제 계약은 backend/MEAL_RECORD_API.md를 따른다. 완료 식사 직접 입력·6개 영양 스냅샷·조회·취소·기간 합계가 대상이다.
+> 영양값은 입력한 섭취량 전체 기준이며 미상(null)과 0을 구분한다. 아래 식후 복약 재계산·사진·음식 사전 연결 예시는 후속 목표로, 현재 구현에 포함하지 않는다.
+
 ```http
 POST /api/v1/meals
 Authorization: Bearer {accessToken}
@@ -675,8 +680,9 @@ Idempotency-Key: {uuid}
 ### 6.15 오늘의 복약 회차
 
 > 2026-10-17 고정시간 일정·하루 회차 생성/조회 1차 구현: backend/MEDICATION_SCHEDULE_API.md 참고.
-> GET은 저장된 회차만 조회합니다. 별도 POST /medications/{id}/occurrences?date= 로 생성해야 합니다.
-> 아래 식후 예시와 실제 복약 행동은 후속 목표이며 현재 mealRelation=NONE, SCHEDULED/CANCELLED만 지원합니다.
+> GET은 저장된 회차만 조회합니다. 별도 POST /medications/{id}/occurrences?date= 또는 활성화한 서버 자동 생성 작업으로 저장합니다.
+> 2026-10-19 오늘 회차 자동 생성 후속: backend/MEDICATION_GENERATION.md 참고. 기본 비활성화, 일정 시간대별 오늘, 배치 50개·반복 중복 보호. 알림 발송과는 별개입니다.
+> 아래 식후 예시는 후속 목표이며 현재 mealRelation=NONE입니다. 2026-10-19 행동 기록 구현으로 SCHEDULED/CANCELLED 외 TAKEN/SKIPPED/NO_STOCK도 지원합니다.
 
 ```http
 GET /api/v1/medication-occurrences?date=2026-10-14
@@ -703,6 +709,10 @@ GET /api/v1/medication-occurrences?date=2026-10-14
 ```
 
 ### 6.16 실제 복약 행동
+
+> 2026-10-19 구현 범위: TAKE/SKIP/NO_STOCK 최초 기록 및 GET 동일 경로 조회.
+> 회차당 최종 행동 1건, 사용자별 Idempotency-Key 재전송 보호. 수정·취소 이력 및 알림 작업은 후속입니다.
+> 실제 적용 계약·시각/상태 제한은 `backend/MEDICATION_ACTION_API.md`를 따릅니다.
 
 ```http
 POST /api/v1/medication-occurrences/{occurrenceId}/actions
@@ -739,7 +749,7 @@ Idempotency-Key: {uuid}
 }
 ```
 
-서버는 실제 행동 시각과 요청을 기록한 서버 시각을 구분하고, 남은 재알림 작업을 갱신한다.
+서버는 실제 복용 시각(actualAt)과 요청을 저장한 서버 시각(recordedAt)을 구분한다. SKIP/NO_STOCK은 실제 복용 시각·수량·단위를 받지 않는다. 남은 재알림 작업 갱신은 알림 기능 구현 시 연결한다.
 
 ### 6.17 알림 설정
 

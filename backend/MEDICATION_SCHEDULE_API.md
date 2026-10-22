@@ -1,7 +1,7 @@
 # 고정시간 복약 일정·예정 회차 — 1차
 
 2026-10-17. 개인 복약 기본정보(PR #5)에 의존합니다. 모든 경로 /api/v1·Bearer 인증·본인 데이터·현재 필수 동의 3종이 필요합니다.
-식전/식후 계산, 실제 복용 행동, 재고, 알림, 자동 주기 생성은 이번 범위가 아닙니다.
+식전/식후 계산, 재고, 알림은 이번 범위가 아닙니다. 실제 복용 행동은 `MEDICATION_ACTION_API.md`, 2026-10-19 후속 자동 주기 생성은 `MEDICATION_GENERATION.md`를 참고하세요(기본 비활성화).
 
 ## API와 연결 순서
 
@@ -15,7 +15,7 @@
 1. 개인 복약 등록 후 medicationId와 version을 받습니다.
 2. 아래 일정 요청을 보냅니다. 응답 medicationVersion은 증가하므로 이후 수정에 새 버전을 사용합니다.
 3. 원하는 날짜의 회차 생성 POST를 실행합니다. data.created는 신규 건수입니다.
-4. 회차 GET으로 표시합니다. 생성 요청 전에는 빈 목록이며 성공적인 조회가 자동 생성/푸시를 뜻하지 않습니다.
+4. 회차 GET으로 표시합니다. 수동 생성 또는 활성화한 자동 생성 작업이 실행되기 전에는 빈 목록입니다. 성공적인 조회 자체가 회차 생성/푸시를 수행하지 않습니다.
 
 ## 일정 요청 예시
 
@@ -45,7 +45,7 @@
 - 첫 일정은 오늘부터 설정 가능. 이미 일정이 있으면 **내일 이후이며 마지막 버전 시작일보다 뒤**인 날짜에만 추가합니다.
 - 마지막 일정의 effectiveUntil을 새 effectiveFrom으로 닫습니다. 종료 경계는 배타적입니다.
 - 과거·당일 일정을 소급 수정하지 않으며 시간대 교체도 현재 미지원(400).
-- 변경일 이후 기존 SCHEDULED 회차는 CANCELLED로 보존, 새 버전 회차는 명시적 생성 요청으로 만듭니다.
+- 변경일 이후 기존 SCHEDULED 회차는 CANCELLED로 보존, 새 버전 회차는 명시적 생성 요청 또는 변경일의 자동 생성 작업으로 만듭니다.
 - 생성된 이름·시간대·용량·단위는 스냅샷입니다. 나중에 개인 항목 이름을 바꿔도 과거 회차가 바뀌지 않습니다.
 - 요청 본문 재전송용 키는 일정 추가 API에 아직 없습니다. version으로 중복 변경을 거절하므로 응답 유실 시 일정 GET 후 현재 상태를 확인하세요.
 - 일정이 생긴 개인 복약의 startDate/endDate 수정은 충돌 방지를 위해 409입니다. 별도 기간 재조정 API는 후속입니다.
@@ -60,7 +60,7 @@
 - 서머타임으로 존재하지 않거나 두 번 존재하는 시각은 자동 이동/선택하지 않고 400입니다.
 - 회차 scheduledAt은 UTC Instant, scheduledDate는 **해당 일정 시간대의 달력 날짜**입니다. 여러 시간대 일정을 같은 date로 조회하면 각 일정의 해당 날짜 회차를 모읍니다.
 - 응답 items: occurrenceId, medicationId, scheduleId, medicationName, scheduledDate, scheduledAt, timezone, mealRelation=NONE, doseAmount, doseUnitCode, status.
-- status는 SCHEDULED/CANCELLED. CANCELLED도 반환하므로 앱은 취소 상태를 표시해야 합니다. 완료·미완료·실제 복용시간은 아직 없습니다.
+- 최초 status는 SCHEDULED, 일정 취소 시 CANCELLED. 후속 행동 API 적용 후 TAKEN/SKIPPED/NO_STOCK도 반환합니다. CANCELLED도 표시하며 실제 복용 시각·수량은 회차별 actions GET으로 조회합니다. 미완료(MISSED) 자동 판정은 아직 없습니다.
 - 중지/종료 시 현재 Instant 이후의 SCHEDULED 회차를 취소합니다. 이미 지난 예정 회차는 이력 유지이며 복용 완료로 간주하지 않습니다.
 - 조회는 예정시각·ID 순. 회차 단위 페이지 처리는 아직 없습니다.
 

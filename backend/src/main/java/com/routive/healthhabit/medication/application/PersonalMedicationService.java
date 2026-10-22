@@ -17,26 +17,18 @@ import org.springframework.transaction.annotation.*;
 @Transactional(isolation=Isolation.READ_COMMITTED)
 public class PersonalMedicationService {
     private final PersonalMedicationRepository medications;
-    private final UserRepository users;
-    private final UserConsentRepository consents;
+    private final com.routive.healthhabit.user.application.HealthRecordAccessService healthAccess;
     private final MedicationProductRepository products;
     private final FixedMedicationScheduleRepository schedules;
     private final MedicationOccurrenceRepository occurrences;
-    public PersonalMedicationService(PersonalMedicationRepository m, UserRepository u,
-            UserConsentRepository c, MedicationProductRepository p,
+    public PersonalMedicationService(PersonalMedicationRepository m,
+            com.routive.healthhabit.user.application.HealthRecordAccessService healthAccess, MedicationProductRepository p,
             FixedMedicationScheduleRepository s, MedicationOccurrenceRepository o) {
-        medications=m; users=u; consents=c; products=p;
+        medications=m; this.healthAccess=healthAccess; products=p;
         schedules=s;occurrences=o;
     }
     private void authorize(UUID user, boolean write) {
-        var u=(write?users.findLockedById(user):users.findById(user))
-            .filter(x->"ACTIVE".equals(x.getStatus()))
-            .orElseThrow(()->new BusinessException(ErrorCode.USER_NOT_FOUND));
-        Set<String> active=new HashSet<>();
-        consents.findAllByUserIdOrderByConsentedAtDesc(u.getId()).stream()
-            .filter(c->c.getWithdrawnAt()==null).forEach(c->active.add(c.getConsentType()));
-        if(!active.containsAll(Set.of("TERMS_OF_SERVICE","PRIVACY","SENSITIVE_HEALTH_DATA")))
-            throw new BusinessException(ErrorCode.REQUIRED_CONSENT_MISSING);
+        healthAccess.require(user,write);
     }
     public void authorizeRecords(UUID user,boolean write){authorize(user,write);}
     public PersonalMedication requireOwned(UUID user,UUID id,boolean write){

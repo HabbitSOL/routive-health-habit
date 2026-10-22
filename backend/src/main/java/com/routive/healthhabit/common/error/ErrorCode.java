@@ -19,6 +19,8 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     DRUG_NOT_FOUND(HttpStatus.NOT_FOUND, "의약품을 찾을 수 없습니다."),
     MEDICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "개인 복약 정보를 찾을 수 없습니다."),
+    MEAL_NOT_FOUND(HttpStatus.NOT_FOUND, "식사 기록을 찾을 수 없습니다."),
+    MEDICATION_OCCURRENCE_NOT_FOUND(HttpStatus.NOT_FOUND, "예정 복약 회차를 찾을 수 없습니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
 
     private final HttpStatus status;
