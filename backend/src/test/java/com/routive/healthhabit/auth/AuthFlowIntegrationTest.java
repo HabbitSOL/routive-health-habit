@@ -53,6 +53,23 @@ class AuthFlowIntegrationTest {
     @MockitoBean
     private AccountMailSender accountMailSender;
 
+    @Test
+    void loginRateLimitAlsoProtectsNonexistentAccounts() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            mockMvc.perform(post("/api/v1/auth/login")
+                    .with(request -> { request.setRemoteAddr("127.0.0.99"); return request; })
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"email\":\"rate-limit-fixture@example.invalid\",\"password\":\"fake-password-123\"}"))
+                    .andExpect(status().isUnauthorized());
+        }
+        mockMvc.perform(post("/api/v1/auth/login")
+                .with(request -> { request.setRemoteAddr("127.0.0.99"); return request; })
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"rate-limit-fixture@example.invalid\",\"password\":\"fake-password-123\"}"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error.code").value("TOO_MANY_REQUESTS"));
+    }
+
     @BeforeEach
     void cleanDatabase() {
         reset(accountMailSender);

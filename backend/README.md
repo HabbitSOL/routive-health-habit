@@ -67,7 +67,7 @@ PowerShell에서 `backend` 폴더로 이동한 뒤 실행합니다.
 
 ```powershell
 docker compose up -d
-.\mvnw.cmd spring-boot:run
+.\mvnw.cmd spring-boot:run '-Dspring-boot.run.profiles=local'
 ```
 
 서버 확인:
@@ -97,7 +97,7 @@ $result = Invoke-RestMethod -Method Post `
   -Body $body
 ```
 
-회원가입 응답에는 로그인 토큰 대신 `PENDING_EMAIL_VERIFICATION` 상태가 반환됩니다. 로컬 기본 설정에서는 인증 링크가 서버 로그에 출력되며, 운영 환경에서는 아래 SMTP 설정을 사용해야 합니다.
+회원가입 응답에는 로그인 토큰 대신 `PENDING_EMAIL_VERIFICATION` 상태가 반환됩니다. console 모드는 인증 링크·토큰·주소를 로그에 출력하지 않습니다. 실제 가입 시연에는 개발용 SMTP 설정이 필요하며 운영에서는 별도 비밀키·SMTP·HTTPS 인증 링크 설정을 사용해야 합니다.
 
 소셜 로그인 요청 예시:
 
