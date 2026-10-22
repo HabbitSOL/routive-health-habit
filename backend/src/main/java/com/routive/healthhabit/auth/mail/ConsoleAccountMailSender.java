@@ -9,9 +9,9 @@ public class ConsoleAccountMailSender implements AccountMailSender {
     private final MailDeliveryProperties properties;
     public ConsoleAccountMailSender(MailDeliveryProperties properties) { this.properties = properties; }
     public void sendVerification(String email, String token) {
-        log.info("LOCAL ONLY email verification for {}: {}#token={}", email, properties.verificationBaseUrl(), token);
+        log.info("Development verification delivery skipped; configure SMTP to receive authentication links");
     }
     public void sendPasswordReset(String email, String token) {
-        log.info("LOCAL ONLY password reset for {}: {}#token={}", email, properties.passwordResetBaseUrl(), token);
+        log.info("Development password-reset delivery skipped; configure SMTP to receive authentication links");
     }
 }

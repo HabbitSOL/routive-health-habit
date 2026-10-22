@@ -19,11 +19,14 @@ public class AuthController {
     private final AuthService authService;
     private final SocialAuthService socialAuthService;
     private final AccountRecoveryService recoveryService;
+    private final com.routive.healthhabit.auth.application.LoginAttemptLimiter loginLimiter;
 
-    public AuthController(AuthService authService, SocialAuthService socialAuthService, AccountRecoveryService recoveryService) {
+    public AuthController(AuthService authService, SocialAuthService socialAuthService, AccountRecoveryService recoveryService,
+            com.routive.healthhabit.auth.application.LoginAttemptLimiter loginLimiter) {
         this.authService = authService;
         this.socialAuthService = socialAuthService;
         this.recoveryService = recoveryService;
+        this.loginLimiter = loginLimiter;
     }
 
     @PostMapping("/signup")
@@ -32,7 +35,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    ApiResponse<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+    ApiResponse<TokenResponse> login(@Valid @RequestBody LoginRequest request, jakarta.servlet.http.HttpServletRequest servletRequest) {
+        loginLimiter.check(com.routive.healthhabit.user.domain.User.normalizeEmail(request.email()), servletRequest.getRemoteAddr());
         return ApiResponse.success(authService.login(request));
     }
 

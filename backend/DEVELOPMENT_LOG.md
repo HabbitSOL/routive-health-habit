@@ -1,5 +1,12 @@
 # 백엔드 개발 현황 및 테스트 기록
 
+## 2026-10-22 · 인증 보안 보완 분리 PR
+
+- `fix/backend/auth-security-hardening`, develop `2e79df7` 기준. 콘솔 메일 민감정보 로그 제거, 배포 설정 가드, 필수 SMTP STARTTLS, 계정/IP/프로세스 로그인 제한 및 429 응답. DB 변경 없음. 상세는 SECURITY_HARDENING.md.
+- Windows·Java 21.0.12.1·가짜 데이터. `mvnw.cmd --batch-mode -o test`: 13:57:25 KST H2 128개 통과. `scripts/Test-MariaDb.ps1`(도구 경로 인수 지정): 13:58:33 KST 격리 MariaDB 11.4.8 128개 통과, V1~V9·JPA validate 성공, 서버 종료. 두 실행 실패/오류/건너뜀 0.
+- 신규 9개 보안 회귀 포함. 공급자는 모의 객체, SMTP는 루프백이며 실제 외부 계정·수신함·Android E2E·운영은 미검증. 기존 10월 18일 결과와 별개의 이번 실행이다.
+- CI 재시도·복약 기록/자동 생성은 별도 PR. 사용자 요청으로 커밋·Push·develop PR 생성까지 진행하고 병합은 수행하지 않는다. PR별 노션 문서는 생성 후 기존 허브에 연결한다: https://app.notion.com/p/3f99280f6a7b817886c2e04f119a149c
+
 ## 2026-10-17 · 고정시간 복약 일정·예정 회차
 
 - feat/backend/medication-schedules, 개인 복약 PR #5 위의 후속 구현입니다. #5는 시작 시 OPEN이므로 다음 PR은 develop 대상 초안으로 의존성을 표시합니다.
