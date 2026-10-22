@@ -80,3 +80,6 @@ drug-import:
   max-pages: ${MFDS_IMPORT_MAX_PAGES:100}
   page-size: ${MFDS_IMPORT_PAGE_SIZE:100}
 
+medication-generation:
+  enabled: ${MEDICATION_GENERATION_ENABLED:false}
+
