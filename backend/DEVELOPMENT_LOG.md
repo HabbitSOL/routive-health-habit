@@ -355,3 +355,11 @@ MariaDB는 기존 DB와 분리한 임시 데이터·로컬 포트로 실행했�
 - 다음: 성준 API/응답 계약 연결, 실제 기기 확인. 3.2 프론트엔드 데모 구현 완료 · 서버 연동 대기.
 - 근거: android/HOME_HANDOFF.md, android/app/src/test/java/com/example/sol/feature/home/HomeViewModelTest.kt.
 - Notion 동기화 대기: 지정 개발 기록 페이지 3f99280f6a7b817886c2e04f119a149c 재조회가 NOT_FOUND. 접근 가능한 창업 페이지와 별개 권한 문제.
+
+## 2026-10-22 · 복약 행동·오늘 회차 자동 생성 분리 PR
+
+- `feat/backend/medication-actions-generation`, develop `2e79df7` 기준. POST/GET /api/v1/medication-occurrences/{id}/actions, 실제 복용/서버 기록 시각 분리, 요청키·사용자 잠금·UNIQUE로 중복 보호, 동의/소유권 확인 및 탈퇴 삭제. V10 medication_actions, 실행용 18개 테이블.
+- 기본 비활성인 오늘 회차 자동 생성: MEDICATION_GENERATION_ENABLED=true일 때 시작 30초 후·종료 60초 후, ID 키셋 최대 50개씩 항목별 트랜잭션. 일정 시간대·요일·기간·버전 적용, 최종/취소 상태 보존. 실패 재시도·집계 로그.
+- Windows·Java 21.0.12.1·가짜 데이터. `mvnw.cmd --batch-mode -o test`: 13:57:27 KST H2 147개 통과. `scripts/Test-MariaDb.ps1`(도구 경로 인수): 13:59:48 KST 격리 MariaDB 11.4.8 147개 통과, V1~V10·JPA validate 성공, 서버 종료. 실패/오류/건너뜀 0.
+- 분리된 보안 변경 9개는 포함하지 않으므로 10월 19일 조합본 156개와 다르다. 실제 외부 공급자는 모의 객체·SMTP 루프백이며 Android E2E·운영 장기 타이머·다중 서버 부하·배포는 미검증. H2 완료 시 Surefire 임시 디렉터리 경고가 있었으나 전체 테스트와 BUILD SUCCESS 확인.
+- 식사 연계·재고·알림·기록 정정은 후속. 공개 행동 API 및 자동 생성 제한은 MEDICATION_ACTION_API.md와 MEDICATION_GENERATION.md 참고. 보안/CI는 별도 PR, 승인·병합·배포 수행 없음. 노션 PR별 기록은 기존 허브에 연결: https://app.notion.com/p/3f99280f6a7b817886c2e04f119a149c

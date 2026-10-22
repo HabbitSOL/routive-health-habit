@@ -29,6 +29,11 @@ public class MedicationOccurrence {
         status="SCHEDULED";createdAt=Instant.now();
     }
     public void cancel(){if("SCHEDULED".equals(status))status="CANCELLED";}
+    public void resolve(String target) {
+        if (!"SCHEDULED".equals(status) || !java.util.Set.of("TAKEN", "SKIPPED", "NO_STOCK").contains(target))
+            throw new IllegalStateException("Invalid occurrence transition");
+        status = target;
+    }
     public UUID getId(){return id;} public UUID getMedicationId(){return medicationId;}
     public UUID getScheduleId(){return scheduleId;} public LocalDate getScheduledDate(){return scheduledDate;}
     public Instant getScheduledAt(){return scheduledAt;} public String getTimezone(){return timezone;}
